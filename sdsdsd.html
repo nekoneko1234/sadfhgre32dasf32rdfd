@@ -1,0 +1,15 @@
+<input id="p" placeholder="progress">
+<input id="t" placeholder="total">
+<div id="bar"></div>
+
+<script>
+function update() {
+  let p = document.getElementById("p").value;
+  let t = document.getElementById("t").value;
+  let percent = p/t;
+  let filled = Math.floor(percent * 10);
+  document.getElementById("bar").innerText =
+    "█".repeat(filled) + "░".repeat(10-filled) + " " + p + "/" + t;
+}
+document.querySelectorAll("input").forEach(i => i.oninput = update);
+</script>
