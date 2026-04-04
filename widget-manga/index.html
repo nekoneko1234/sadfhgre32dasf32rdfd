@@ -80,50 +80,43 @@ async function loadManga() {
 
   const api = "https://api.mangadex.org/manga?limit=10&order[followedCount]=desc&includes[]=cover_art";
 
-  try {
-    const res = await fetch(proxy + encodeURIComponent(api));
-    const json = await res.json();
+  const res = await fetch(proxy + encodeURIComponent(api));
+  const json = await res.json();
 
-    const container = document.getElementById("manga-container");
-    container.innerHTML = "";
+  const container = document.getElementById("manga-container");
+  container.innerHTML = "";
 
-    json.data.forEach(manga => {
-      // title
-      const titleObj = manga.attributes.title;
-      const title = Object.values(titleObj)[0];
+  json.data.forEach(manga => {
+    const title = Object.values(manga.attributes.title)[0];
 
-      // cover relation
-      const coverRel = manga.relationships.find(r => r.type === "cover_art");
-      if (!coverRel || !coverRel.attributes) return;
+    const coverRel = manga.relationships.find(r => r.type === "cover_art");
+    if (!coverRel || !coverRel.attributes) return;
 
-      const fileName = coverRel.attributes.fileName;
+    const fileName = coverRel.attributes.fileName;
 
-      // ✅ FIXED COVER URL (IMPORTANT CHANGE)
-      const coverUrl = `https://mangadex.org/covers/${manga.id}/${fileName}`;
+    // 👇 RAW IMAGE URL
+    const rawCover = `https://uploads.mangadex.org/covers/${manga.id}/${fileName}`;
 
-      // card
-      const div = document.createElement("div");
-      div.className = "card";
+    // ✅ PROXIED IMAGE (FIX)
+    const coverUrl = proxy + encodeURIComponent(rawCover);
 
-      div.innerHTML = `
-        <img src="${coverUrl}" onerror="this.src='https://via.placeholder.com/150x220?text=No+Cover'" />
-        <div class="title">${title}</div>
-      `;
+    const div = document.createElement("div");
+    div.className = "card";
 
-      div.onclick = () => {
-        window.open(`https://mangadex.org/title/${manga.id}`, "_blank");
-      };
+    div.innerHTML = `
+      <img src="${coverUrl}" />
+      <div class="title">${title}</div>
+    `;
 
-      container.appendChild(div);
-    });
+    div.onclick = () => {
+      window.open(`https://mangadex.org/title/${manga.id}`, "_blank");
+    };
 
-  } catch (err) {
-    console.error("Error:", err);
-  }
+    container.appendChild(div);
+  });
 }
 
 loadManga();
-setInterval(loadManga, 600000);
 </script>
 
 </body>
