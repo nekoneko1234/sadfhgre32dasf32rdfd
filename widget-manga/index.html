@@ -49,20 +49,19 @@
   <script>
 async function loadManga() {
   try {
-    const res = await fetch(
-      "https://api.mangadex.org/manga?limit=10&includes[]=cover_art&order[followedCount]=desc",
-      {
-        headers: {
-          "Content-Type": "application/json"
-        }
-      }
+    const proxy = "https://api.allorigins.win/raw?url=";
+
+    const url = encodeURIComponent(
+      "https://api.mangadex.org/manga?limit=10&includes[]=cover_art&order[followedCount]=desc"
     );
 
+    const res = await fetch(proxy + url);
     const data = await res.json();
-    console.log(data); // 👈 debug (open browser console)
+
+    console.log(data);
 
     const container = document.getElementById("mangaRow");
-    container.innerHTML = ""; // clear first
+    container.innerHTML = "";
 
     data.data.forEach(manga => {
       const title = Object.values(manga.attributes.title)[0];
