@@ -5,37 +5,40 @@
 <title>MangaDex Widget</title>
 
 <style>
-/* 🔥 TRUE TRANSPARENCY FIX */
+/* 🔥 FULL RESET (kills Notion iframe background issues) */
 html, body {
-  background: transparent !important;
   margin: 0;
   padding: 0;
+  background: transparent !important;
+  background-color: transparent !important;
   font-family: Arial, sans-serif;
-  color: #111; /* strong for light mode */
 }
 
-/* DARK MODE */
-@media (prefers-color-scheme: dark) {
-  html, body {
-    color: #e6e6e6;
-  }
+/* force all layers transparent */
+* {
+  box-sizing: border-box;
 }
 
-/* header */
-h2 {
-  margin: 20px 24px 0;
-  font-size: 18px;
-  font-weight: 600;
+/* TEXT COLORS */
+body {
   color: #111;
 }
 
 @media (prefers-color-scheme: dark) {
-  h2 {
-    color: #ffffff;
+  body {
+    color: #e6e6e6;
   }
 }
 
-/* container */
+/* HEADER */
+h2 {
+  margin: 20px 24px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: inherit;
+}
+
+/* CONTAINER */
 .container {
   display: flex;
   overflow-x: auto;
@@ -43,7 +46,7 @@ h2 {
   padding: 20px 24px;
 }
 
-/* scrollbar */
+/* SCROLLBAR */
 .container::-webkit-scrollbar {
   height: 8px;
 }
@@ -52,7 +55,7 @@ h2 {
   border-radius: 10px;
 }
 
-/* card */
+/* CARD */
 .card {
   width: 150px;
   flex-shrink: 0;
@@ -61,7 +64,7 @@ h2 {
   border-radius: 10px;
 }
 
-/* hover */
+/* HOVER */
 .card:hover {
   transform: translateY(-4px) scale(1.05);
   box-shadow: 0 8px 24px rgba(0,0,0,0.18);
@@ -77,7 +80,7 @@ h2 {
   transform: scale(0.97);
 }
 
-/* image */
+/* IMAGE */
 .card img {
   width: 100%;
   height: 220px;
@@ -92,7 +95,7 @@ h2 {
   }
 }
 
-/* title */
+/* TITLE */
 .title {
   font-size: 13px;
   margin-top: 6px;
