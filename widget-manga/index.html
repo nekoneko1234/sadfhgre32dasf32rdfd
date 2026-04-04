@@ -1,162 +1,80 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MangaDex Widget v1.3</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg-color: #0f0f0f;
-            --text-color: #ffffff;
-            --card-width: 160px;
-            --accent: #ff6740; /* MangaDex Orange */
-        }
+<meta charset="UTF-8">
+<title>MangaDex Widget</title>
 
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            font-family: 'Roboto', sans-serif;
-            margin: 0;
-            padding: 20px;
-            overflow-x: hidden;
-        }
+<style>
+body {
+  background: #0f1115;
+  color: white;
+  font-family: Arial;
+}
 
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
+h2 {
+  margin: 20px;
+}
 
-        h2 { font-size: 1.2rem; margin: 0; font-weight: 600; letter-spacing: 0.5px; }
+.container {
+  display: flex;
+  overflow-x: auto;
+  gap: 15px;
+  padding: 20px;
+}
 
-        #status-msg { font-size: 0.7rem; color: #666; }
+.card {
+  min-width: 150px;
+  cursor: pointer;
+}
 
-        .manga-grid {
-            display: flex;
-            gap: 15px;
-            overflow-x: auto;
-            padding-bottom: 15px;
-            scroll-behavior: smooth;
-        }
+.card img {
+  width: 150px;
+  height: 220px;
+  object-fit: cover;
+  border-radius: 8px;
+}
 
-        .manga-grid::-webkit-scrollbar { height: 4px; }
-        .manga-grid::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
-
-        .manga-card {
-            flex: 0 0 var(--card-width);
-            text-decoration: none;
-            color: inherit;
-            transition: transform 0.2s ease;
-        }
-
-        .manga-card:hover { transform: scale(1.03); }
-
-        .cover-wrapper {
-            width: 100%;
-            aspect-ratio: 2 / 3;
-            border-radius: 6px;
-            overflow: hidden;
-            background-color: #1a1a1a;
-            margin-bottom: 10px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-        }
-
-        .cover-wrapper img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .manga-title {
-            font-size: 0.85rem;
-            font-weight: 500;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            line-height: 1.3;
-        }
-    </style>
+.title {
+  font-size: 14px;
+  margin-top: 5px;
+}
+</style>
 </head>
+
 <body>
 
-    <div class="header">
-        <h2>Recommended</h2>
-        <span id="status-msg">Connecting...</span>
-    </div>
+<h2>Recommended</h2>
+<div class="container" id="manga-container"></div>
 
-    <div class="manga-grid" id="manga-container">
-        </div>
+<script>
+async function loadManga() {
+  const res = await fetch("https://api.mangadex.org/manga?limit=10&order[followedCount]=desc&includes[]=cover_art");
+  const data = await res.json();
 
-    <script>
-        async function fetchManga() {
-            const container = document.getElementById('manga-container');
-            const status = document.getElementById('status-msg');
-            
-            // 1. The MangaDex API URL
-            const apiUrl = 'https://api.mangadex.org/manga?limit=12&includes[]=cover_art&order[followedCount]=desc&contentRating[]=safe&contentRating[]=suggestive';
-            
-            // 2. The Proxy URL (using AllOrigins "raw" mode + a timestamp to force fresh data)
-            const proxiedUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(apiUrl)}&cb=${Date.now()}`;
+  const container = document.getElementById("manga-container");
 
-            try {
-                const response = await fetch(proxiedUrl);
-                
-                if (!response.ok) {
-                    throw new Error(`Proxy error: ${response.status}`);
-                }
+  data.data.forEach(manga => {
+    const title = Object.values(manga.attributes.title)[0];
 
-                const json = await response.json();
-                
-                if (!json.data || json.data.length === 0) {
-                    throw new Error("No data received from MangaDex");
-                }
+    const coverRel = manga.relationships.find(r => r.type === "cover_art");
+    const fileName = coverRel.attributes.fileName;
 
-                container.innerHTML = ''; 
-                status.innerText = "Updated just now";
+    const coverUrl = `https://mangadex.org/covers/${manga.id}/${fileName}.256.jpg`;
 
-                json.data.forEach(manga => {
-                    const id = manga.id;
-                    
-                    // Prefer Romanized titles (ja-ro) for that aesthetic look
-                    const title = manga.attributes.title["ja-ro"] || 
-                                  manga.attributes.title.ja || 
-                                  manga.attributes.title.en || 
-                                  "Untitled";
-                    
-                    const coverItem = manga.relationships.find(rel => rel.type === 'cover_art');
-                    const fileName = coverItem ? coverItem.attributes.fileName : '';
-                    const coverUrl = fileName ? `https://uploads.mangadex.org/covers/${id}/${fileName}.256.jpg` : 'https://via.placeholder.com/256x384?text=No+Cover';
+    const div = document.createElement("div");
+    div.className = "card";
 
-                    const card = document.createElement('a');
-                    card.className = 'manga-card';
-                    card.href = `https://mangadex.org/title/${id}`;
-                    card.target = '_blank';
+    div.innerHTML = `
+      <img src="${coverUrl}" />
+      <div class="title">${title}</div>
+    `;
 
-                    card.innerHTML = `
-                        <div class="cover-wrapper">
-                            <img src="${coverUrl}" alt="${title}" loading="lazy">
-                        </div>
-                        <div class="manga-title">${title}</div>
-                    `;
-                    
-                    container.appendChild(card);
-                });
-            } catch (error) {
-                console.error("Widget Error:", error);
-                status.innerText = "Connection Failed";
-                container.innerHTML = `
-                    <div style="padding: 20px; color: #ff6b6b; font-size: 0.9rem;">
-                        <b>Fetch Error:</b> ${error.message}<br><br>
-                        <small>If you're on Firefox, try clicking the <b>Shield Icon</b> in the address bar and turning off "Enhanced Tracking Protection" for this site.</small>
-                    </div>
-                `;
-            }
-        }
+    container.appendChild(div);
+  });
+}
 
-        fetchManga();
-    </script>
+loadManga();
+</script>
+
 </body>
 </html>
