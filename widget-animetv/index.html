@@ -55,29 +55,23 @@ h2 {
 
 <body>
 
+<h2>Top Anime</h2>
+<div class="container" id="top"></div>
+
 <h2>Trending</h2>
 <div class="container" id="trending"></div>
 
-<h2>Popular</h2>
-<div class="container" id="popular"></div>
-
-<h2>Latest</h2>
-<div class="container" id="latest"></div>
-
 <script>
-const API = "https://widget-animetv.negimanosensei.workers.dev/"; // 🔥 PUT YOUR WORKER URL HERE
-
 async function loadAnime() {
   try {
-    const res = await fetch(API);
-    const json = await res.json();
+    const top = await fetch("https://api.jikan.moe/v4/top/anime").then(r => r.json());
+    const trending = await fetch("https://api.jikan.moe/v4/seasons/now").then(r => r.json());
 
-    render("trending", json.trending);
-    render("popular", json.popular);
-    render("latest", json.latest);
+    render("top", top.data);
+    render("trending", trending.data);
 
   } catch (e) {
-    console.error(e);
+    console.error("Error:", e);
   }
 }
 
@@ -85,20 +79,16 @@ function render(id, list) {
   const el = document.getElementById(id);
   el.innerHTML = "";
 
-  if (!list) return;
-
   list.slice(0, 12).forEach(a => {
     const div = document.createElement("div");
     div.className = "card";
 
     div.innerHTML = `
-      <img src="${a.poster || a.image || ""}">
-      <div class="title">${a.name || a.title || "No title"}</div>
+      <img src="${a.images.jpg.image_url}">
+      <div class="title">${a.title}</div>
     `;
 
-    div.onclick = () => {
-      window.open(a.url || "#", "_blank");
-    };
+    div.onclick = () => window.open(a.url, "_blank");
 
     el.appendChild(div);
   });
