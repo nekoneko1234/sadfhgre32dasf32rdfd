@@ -5,21 +5,15 @@
 <title>MangaDex Widget</title>
 
 <style>
-/* 🔥 FULL RESET (kills Notion iframe background issues) */
+/* ✅ CORRECT TRANSPARENCY (not breaking Notion) */
 html, body {
   margin: 0;
   padding: 0;
-  background: transparent !important;
-  background-color: transparent !important;
+  background: transparent;
   font-family: Arial, sans-serif;
 }
 
-/* force all layers transparent */
-* {
-  box-sizing: border-box;
-}
-
-/* TEXT COLORS */
+/* TEXT */
 body {
   color: #111;
 }
@@ -35,7 +29,6 @@ h2 {
   margin: 20px 24px 0;
   font-size: 18px;
   font-weight: 600;
-  color: inherit;
 }
 
 /* CONTAINER */
@@ -61,19 +54,11 @@ h2 {
   flex-shrink: 0;
   cursor: pointer;
   transition: all 0.2s ease;
-  border-radius: 10px;
 }
 
 /* HOVER */
 .card:hover {
   transform: translateY(-4px) scale(1.05);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.18);
-}
-
-@media (prefers-color-scheme: dark) {
-  .card:hover {
-    box-shadow: 0 6px 20px rgba(0,0,0,0.6);
-  }
 }
 
 .card:active {
@@ -86,13 +71,6 @@ h2 {
   height: 220px;
   object-fit: cover;
   border-radius: 8px;
-  background: rgba(0,0,0,0.05);
-}
-
-@media (prefers-color-scheme: dark) {
-  .card img {
-    background: rgba(255,255,255,0.05);
-  }
 }
 
 /* TITLE */
