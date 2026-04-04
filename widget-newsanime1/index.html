@@ -1,142 +1,51 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Anime News Widget</title>
-
-<style>
-  body {
-    margin: 0;
-    background: #2f2f2f;
-    font-family: Arial, sans-serif;
-    color: #fff;
-  }
-
-  .widget {
-    max-width: 700px;
-    margin: 20px auto;
-    padding: 10px;
-  }
-
-  .news-item {
-    display: flex;
-    gap: 15px;
-    padding: 12px 0;
-    border-bottom: 1px solid #444;
-    text-decoration: none;
-    color: inherit;
-  }
-
-  .news-item:hover {
-    background: #3a3a3a;
-  }
-
-  .thumbnail {
-    width: 120px;
-    height: 80px;
-    background: #bbb;
-    flex-shrink: 0;
-    overflow: hidden;
-  }
-
-  .thumbnail img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  .content {
-    flex: 1;
-  }
-
-  .title {
-    font-size: 18px;
-    line-height: 1.3;
-    margin-bottom: 6px;
-
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-
-  .date {
-    font-size: 12px;
-    color: #aaa;
-  }
-
-  @media (max-width: 600px) {
-    .news-item {
-      flex-direction: column;
-    }
-
-    .thumbnail {
-      width: 100%;
-      height: 180px;
-    }
-  }
-</style>
-</head>
-
-<body>
-
-<div class="widget" id="newsWidget"></div>
-
 <script>
 const RSS_URL = "https://www.animenewsnetwork.com/news/rss.xml";
 const API = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(RSS_URL)}`;
 
-function extractImage(item) {
-  // Try media thumbnail
-  if (item.thumbnail) return item.thumbnail;
+async function getOGImage(url) {
+  try {
+    const proxy = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+    const res = await fetch(proxy);
+    const text = await res.text();
 
-  // Try enclosure
-  if (item.enclosure && item.enclosure.link) return item.enclosure.link;
-
-  // Try content parsing
-  const match = item.content.match(/<img.*?src="(.*?)"/);
-  if (match) return match[1];
-
-  // fallback placeholder
-  return "https://via.placeholder.com/120x80?text=No+Image";
+    const match = text.match(/<meta property="og:image" content="(.*?)"/);
+    return match ? match[1] : null;
+  } catch {
+    return null;
+  }
 }
 
 async function loadNews() {
-  try {
-    const res = await fetch(API);
-    const data = await res.json();
+  const res = await fetch(API);
+  const data = await res.json();
+  const container = document.getElementById("newsWidget");
 
-    const container = document.getElementById("newsWidget");
+  for (const item of data.items.slice(0, 10)) {
+    const link = document.createElement("a");
+    link.className = "news-item";
+    link.href = item.link;
+    link.target = "_blank";
 
-    data.items.slice(0, 10).forEach(item => {
-      const link = document.createElement("a");
-      link.className = "news-item";
-      link.href = item.link;
-      link.target = "_blank";
+    // placeholder first (fast load)
+    link.innerHTML = `
+      <div class="thumbnail">
+        <img src="https://via.placeholder.com/120x80?text=Loading">
+      </div>
+      <div class="content">
+        <div class="title">${item.title}</div>
+        <div class="date">${new Date(item.pubDate).toLocaleString()}</div>
+      </div>
+    `;
 
-      const img = extractImage(item);
+    container.appendChild(link);
 
-      link.innerHTML = `
-        <div class="thumbnail">
-          <img src="${img}" alt="">
-        </div>
-        <div class="content">
-          <div class="title">${item.title}</div>
-          <div class="date">${new Date(item.pubDate).toLocaleString()}</div>
-        </div>
-      `;
-
-      container.appendChild(link);
-    });
-
-  } catch (err) {
-    console.error("Error loading news:", err);
+    // load real image async
+    const img = await getOGImage(item.link);
+    if (img) {
+      link.querySelector("img").src = img;
+    }
   }
 }
 
 loadNews();
 </script>
-
-</body>
-</html>
