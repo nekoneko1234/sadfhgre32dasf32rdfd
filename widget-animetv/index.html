@@ -88,7 +88,11 @@ function render(id, list) {
       <div class="title">${a.title}</div>
     `;
 
-    div.onclick = () => window.open(a.url, "_blank");
+    const slug = a.title.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+
+div.onclick = () => {
+  window.open(`https://aniwatchtv.to/search?keyword=${slug}`, "_blank");
+};
 
     el.appendChild(div);
   });
