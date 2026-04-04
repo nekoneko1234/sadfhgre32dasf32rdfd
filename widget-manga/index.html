@@ -5,23 +5,42 @@
 <title>MangaDex Widget</title>
 
 <style>
-body {
-  background: #0f1115;
-  color: white;
-  font-family: Arial;
+/* 🔥 TRUE TRANSPARENCY FIX */
+html, body {
+  background: transparent !important;
   margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+  color: #111; /* strong for light mode */
 }
 
+/* DARK MODE */
+@media (prefers-color-scheme: dark) {
+  html, body {
+    color: #e6e6e6;
+  }
+}
+
+/* header */
 h2 {
-  margin: 20px;
+  margin: 20px 24px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #111;
+}
+
+@media (prefers-color-scheme: dark) {
+  h2 {
+    color: #ffffff;
+  }
 }
 
 /* container */
 .container {
   display: flex;
   overflow-x: auto;
-  gap: 15px;
-  padding: 20px;
+  gap: 18px;
+  padding: 20px 24px;
 }
 
 /* scrollbar */
@@ -29,7 +48,7 @@ h2 {
   height: 8px;
 }
 .container::-webkit-scrollbar-thumb {
-  background: #444;
+  background: rgba(120,120,120,0.4);
   border-radius: 10px;
 }
 
@@ -38,11 +57,24 @@ h2 {
   width: 150px;
   flex-shrink: 0;
   cursor: pointer;
-  transition: transform 0.2s;
+  transition: all 0.2s ease;
+  border-radius: 10px;
 }
 
+/* hover */
 .card:hover {
-  transform: scale(1.08);
+  transform: translateY(-4px) scale(1.05);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+}
+
+@media (prefers-color-scheme: dark) {
+  .card:hover {
+    box-shadow: 0 6px 20px rgba(0,0,0,0.6);
+  }
+}
+
+.card:active {
+  transform: scale(0.97);
 }
 
 /* image */
@@ -51,20 +83,32 @@ h2 {
   height: 220px;
   object-fit: cover;
   border-radius: 8px;
-  background: #222;
+  background: rgba(0,0,0,0.05);
 }
 
-/* title (FIXED WRAP) */
+@media (prefers-color-scheme: dark) {
+  .card img {
+    background: rgba(255,255,255,0.05);
+  }
+}
+
+/* title */
 .title {
   font-size: 13px;
   margin-top: 6px;
-  color: #ddd;
   line-height: 1.3;
+  color: #222;
 
   display: -webkit-box;
-  -webkit-line-clamp: 2;   /* max 2 lines */
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+@media (prefers-color-scheme: dark) {
+  .title {
+    color: #dcdcdc;
+  }
 }
 </style>
 </head>
@@ -78,7 +122,6 @@ h2 {
 async function loadManga() {
   const proxy = "https://plain-tree-92c5.negimanosensei.workers.dev/?url=";
 
-  // 🔥 Hybrid: popular + random (feels like recommended)
   const offset = Math.floor(Math.random() * 200);
 
   const api = `https://api.mangadex.org/manga?limit=10&offset=${offset}&order[followedCount]=desc&includes[]=cover_art`;
@@ -98,7 +141,6 @@ async function loadManga() {
 
       const fileName = coverRel.attributes.fileName;
 
-      // ✅ proxy image (fix hotlink issue)
       const rawCover = `https://uploads.mangadex.org/covers/${manga.id}/${fileName}`;
       const coverUrl = proxy + encodeURIComponent(rawCover);
 
@@ -122,10 +164,7 @@ async function loadManga() {
   }
 }
 
-// 🚀 load once
 loadManga();
-
-// ⏱️ update every 12 hours
 setInterval(loadManga, 43200000);
 </script>
 
