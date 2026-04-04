@@ -87,27 +87,35 @@ h2 {
 
 <script>
 const proxy = "https://plain-tree-92c5.negimanosensei.workers.dev/?url=";
-// If API works without proxy, set proxy = ""
-
 const API = "https://aniwatch-api-v1-0.onrender.com/api/home";
 
 async function loadAnime() {
   try {
+    showLoading();
+
     const res = await fetch(proxy + encodeURIComponent(API));
     const json = await res.json();
 
-    renderRow("trending", json.trending || []);
-    renderRow("popular", json.popular || []);
-    renderRow("latest", json.latest || []);
+    console.log("API RESPONSE:", json);
+
+    renderRow("trending", json.trending || json.spotlight || []);
+    renderRow("popular", json.popular || json.top || []);
+    renderRow("latest", json.latest || json.recent || []);
 
   } catch (err) {
-    console.error("Error loading anime:", err);
+    console.error("Error:", err);
+    showError();
   }
 }
 
 function renderRow(id, list) {
   const container = document.getElementById(id);
   container.innerHTML = "";
+
+  if (!list || list.length === 0) {
+    container.innerHTML = "<p style='opacity:0.6'>No data</p>";
+    return;
+  }
 
   list.slice(0, 12).forEach(anime => {
     const title =
@@ -131,7 +139,7 @@ function renderRow(id, list) {
     div.className = "card";
 
     div.innerHTML = `
-      <img src="${cover}" />
+      <img src="${cover}" loading="lazy" />
       <div class="title">${title}</div>
     `;
 
@@ -141,9 +149,26 @@ function renderRow(id, list) {
   });
 }
 
+function showLoading() {
+  ["trending","popular","latest"].forEach(id => {
+    const el = document.getElementById(id);
+    el.innerHTML = "<p style='opacity:0.6'>Loading...</p>";
+  });
+}
+
+function showError() {
+  ["trending","popular","latest"].forEach(id => {
+    const el = document.getElementById(id);
+    el.innerHTML = "<p style='color:red'>Failed to load</p>";
+  });
+}
+
 loadAnime();
 
-// refresh every 12 hours
+// retry if API was asleep
+setTimeout(loadAnime, 5000);
+
+// refresh every 12h
 setInterval(loadAnime, 43200000);
 </script>
 
