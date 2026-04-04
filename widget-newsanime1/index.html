@@ -87,10 +87,12 @@
 const RSS_URL = "https://www.animenewsnetwork.com/news/rss.xml";
 const API = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(RSS_URL)}`;
 
+// Better proxy (more stable than allorigins)
+const PROXY = "https://corsproxy.io/?";
+
 async function getOGImage(url) {
   try {
-    const proxy = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
-    const res = await fetch(proxy);
+    const res = await fetch(PROXY + encodeURIComponent(url));
     const text = await res.text();
 
     const match = text.match(/<meta property="og:image" content="(.*?)"/);
@@ -105,16 +107,18 @@ async function loadNews() {
   const data = await res.json();
   const container = document.getElementById("newsWidget");
 
-  for (const item of data.items.slice(0, 10)) {
+  const items = data.items.slice(0, 10);
+
+  // Render instantly first
+  const elements = items.map(item => {
     const link = document.createElement("a");
     link.className = "news-item";
     link.href = item.link;
     link.target = "_blank";
 
-    // placeholder first (fast load)
     link.innerHTML = `
       <div class="thumbnail">
-        <img src="https://via.placeholder.com/120x80?text=Loading">
+        <img src="https://via.placeholder.com/120x80?text=..." />
       </div>
       <div class="content">
         <div class="title">${item.title}</div>
@@ -123,13 +127,17 @@ async function loadNews() {
     `;
 
     container.appendChild(link);
+    return { el: link, url: item.link };
+  });
 
-    // load real image async
-    const img = await getOGImage(item.link);
+  // Load images in parallel (FAST)
+  await Promise.all(elements.map(async (item) => {
+    const img = await getOGImage(item.url);
     if (img) {
-      link.querySelector("img").src = img;
+      const imgTag = item.el.querySelector("img");
+      imgTag.src = img;
     }
-  }
+  }));
 }
 
 loadNews();
