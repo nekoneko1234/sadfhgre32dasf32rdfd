@@ -48,7 +48,10 @@ h2 {
 
 <script>
 async function loadManga() {
-  const res = await fetch("https://api.mangadex.org/manga?limit=10&order[followedCount]=desc&includes[]=cover_art");
+  const res = await fetch(
+  "https://api.allorigins.win/raw?url=" +
+  encodeURIComponent("https://api.mangadex.org/manga?limit=10&order[followedCount]=desc&includes[]=cover_art")
+);
   const data = await res.json();
 
   const container = document.getElementById("manga-container");
