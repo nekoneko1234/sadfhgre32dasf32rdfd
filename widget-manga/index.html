@@ -86,33 +86,36 @@
     <div class="manga-grid" id="manga-container">
         </div>
 
-    <script>
+<script>
     async function fetchManga() {
         const container = document.getElementById('manga-container');
-        
-        // We use a proxy to get around the CORS security block
+        // This helps us verify the code actually updated in your browser
+        console.log("Manga Widget v1.2: Starting fetch...");
+
         const apiUrl = 'https://api.mangadex.org/manga?limit=10&includes[]=cover_art&order[followedCount]=desc';
-        const proxiedUrl = `https://corsproxy.io/?${encodeURIComponent(apiUrl)}`;
+        
+        // Using AllOrigins proxy (it's very stable for MangaDex)
+        const proxiedUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(apiUrl)}`;
 
         try {
             const response = await fetch(proxiedUrl);
+            const data = await response.json();
             
-            if (!response.ok) throw new Error('Network response was not ok');
+            // AllOrigins wraps the data, so we have to "unwrap" it
+            const json = JSON.parse(data.contents);
             
-            const json = await response.json();
-            
-            // Clear the container in case of retries
-            container.innerHTML = '';
+            container.innerHTML = ''; 
 
             json.data.forEach(manga => {
                 const id = manga.id;
-                // Get the title (handles cases where the title object might have different language keys)
-                const title = manga.attributes.title.en || Object.values(manga.attributes.title)[0];
+                
+                // Prioritize original/romanized titles over English
+                const title = manga.attributes.title["ja-ro"] || 
+                              manga.attributes.title.ja || 
+                              Object.values(manga.attributes.title)[0];
                 
                 const coverItem = manga.relationships.find(rel => rel.type === 'cover_art');
                 const fileName = coverItem ? coverItem.attributes.fileName : '';
-                
-                // Construct the cover URL
                 const coverUrl = `https://uploads.mangadex.org/covers/${id}/${fileName}.256.jpg`;
 
                 const card = document.createElement('a');
@@ -130,8 +133,8 @@
                 container.appendChild(card);
             });
         } catch (error) {
-            console.error("Error fetching MangaDex data:", error);
-            container.innerHTML = `<p style="color: #ff4d4d;">Failed to load manga. The API might be busy, try refreshing!</p>`;
+            console.error("Fetch error:", error);
+            container.innerHTML = `<p style="color:#ff6b6b">Error: Try a "Hard Refresh" (Ctrl+F5). If this persists, GitHub hasn't deployed your changes yet.</p>`;
         }
     }
 
