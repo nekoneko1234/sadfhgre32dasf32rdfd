@@ -24,6 +24,12 @@
     gap: 15px;
     padding: 12px 0;
     border-bottom: 1px solid #444;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .news-item:hover {
+    background: #3a3a3a;
   }
 
   .thumbnail {
@@ -48,8 +54,9 @@
     font-size: 18px;
     line-height: 1.3;
     margin-bottom: 6px;
+
     display: -webkit-box;
-    -webkit-line-clamp: 2; /* wrap like screenshot */
+    -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
@@ -59,7 +66,6 @@
     color: #aaa;
   }
 
-  /* Responsive */
   @media (max-width: 600px) {
     .news-item {
       flex-direction: column;
@@ -75,15 +81,26 @@
 
 <body>
 
-<div class="widget" id="newsWidget">
-  <!-- News will load here -->
-</div>
+<div class="widget" id="newsWidget"></div>
 
 <script>
 const RSS_URL = "https://www.animenewsnetwork.com/news/rss.xml";
-
-// Use a free RSS-to-JSON proxy (needed for CORS)
 const API = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(RSS_URL)}`;
+
+function extractImage(item) {
+  // Try media thumbnail
+  if (item.thumbnail) return item.thumbnail;
+
+  // Try enclosure
+  if (item.enclosure && item.enclosure.link) return item.enclosure.link;
+
+  // Try content parsing
+  const match = item.content.match(/<img.*?src="(.*?)"/);
+  if (match) return match[1];
+
+  // fallback placeholder
+  return "https://via.placeholder.com/120x80?text=No+Image";
+}
 
 async function loadNews() {
   try {
@@ -93,17 +110,16 @@ async function loadNews() {
     const container = document.getElementById("newsWidget");
 
     data.items.slice(0, 10).forEach(item => {
-      const div = document.createElement("div");
-      div.className = "news-item";
+      const link = document.createElement("a");
+      link.className = "news-item";
+      link.href = item.link;
+      link.target = "_blank";
 
-      // Extract image from content (fallback if none)
-      let img = "";
-      const imgMatch = item.content.match(/<img.*?src="(.*?)"/);
-      if (imgMatch) img = imgMatch[1];
+      const img = extractImage(item);
 
-      div.innerHTML = `
+      link.innerHTML = `
         <div class="thumbnail">
-          ${img ? `<img src="${img}" alt="">` : ""}
+          <img src="${img}" alt="">
         </div>
         <div class="content">
           <div class="title">${item.title}</div>
@@ -111,7 +127,7 @@ async function loadNews() {
         </div>
       `;
 
-      container.appendChild(div);
+      container.appendChild(link);
     });
 
   } catch (err) {
