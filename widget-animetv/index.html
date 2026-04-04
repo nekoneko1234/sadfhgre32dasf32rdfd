@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Anime Widget</title>
+<title>Anime Recommendation</title>
 
 <style>
 html, body {
@@ -33,6 +33,11 @@ h2 {
   width: 150px;
   flex-shrink: 0;
   cursor: pointer;
+  transition: 0.2s;
+}
+
+.card:hover {
+  transform: scale(1.05);
 }
 
 .card img {
@@ -55,31 +60,43 @@ h2 {
 
 <body>
 
-<h2>Top Anime</h2>
-<div class="container" id="top"></div>
-
-<h2>Trending</h2>
-<div class="container" id="trending"></div>
+<h2>Recommended</h2>
+<div class="container" id="row"></div>
 
 <script>
 async function loadAnime() {
   try {
-    const top = await fetch("https://api.jikan.moe/v4/top/anime").then(r => r.json());
-    const trending = await fetch("https://api.jikan.moe/v4/seasons/now").then(r => r.json());
+    // 🔥 RANDOM OFFSET (changes every refresh)
+    const randomPage = Math.floor(Math.random() * 5) + 1;
 
-    render("top", top.data);
-    render("trending", trending.data);
+    // ✅ 1. TOP (stable quality)
+    const topRes = await fetch("https://api.jikan.moe/v4/top/anime");
+    const topJson = await topRes.json();
+    const top = topJson.data.slice(0, 5);
+
+    // ✅ 2. RANDOM (different every time)
+    const randomRes = await fetch(`https://api.jikan.moe/v4/anime?page=${randomPage}`);
+    const randomJson = await randomRes.json();
+    const random = randomJson.data.slice(0, 5);
+
+    // 🔀 MIX
+    let combined = [...top, ...random];
+
+    // 🔀 SHUFFLE
+    combined = combined.sort(() => Math.random() - 0.5);
+
+    render(combined);
 
   } catch (e) {
     console.error("Error:", e);
   }
 }
 
-function render(id, list) {
-  const el = document.getElementById(id);
+function render(list) {
+  const el = document.getElementById("row");
   el.innerHTML = "";
 
-  list.slice(0, 12).forEach(a => {
+  list.forEach(a => {
     const div = document.createElement("div");
     div.className = "card";
 
@@ -88,11 +105,13 @@ function render(id, list) {
       <div class="title">${a.title}</div>
     `;
 
-    const slug = a.title.toLowerCase().replace(/[^a-z0-9]+/g, "-");
-
-div.onclick = () => {
-  window.open(`https://aniwatchtv.to/search?keyword=${slug}`, "_blank");
-};
+    // 🔥 OPEN ANI WATCH SEARCH
+    div.onclick = () => {
+      window.open(
+        `https://aniwatchtv.to/search?keyword=${encodeURIComponent(a.title)}`,
+        "_blank"
+      );
+    };
 
     el.appendChild(div);
   });
