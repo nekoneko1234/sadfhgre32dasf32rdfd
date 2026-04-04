@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Anime Recommendation</title>
+<title>Anime Widget</title>
 
 <style>
 html, body {
@@ -46,7 +46,6 @@ h2 {
 .title {
   font-size: 13px;
   margin-top: 6px;
-  line-height: 1.3;
 
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -64,37 +63,36 @@ h2 {
 <script>
 async function loadAnime() {
   try {
+    showLoading();
+
+    // 🔥 random offset (changes every refresh)
+    const offset = Math.floor(Math.random() * 100);
+
+    // 🔥 fetch all sources in parallel
     const [topRes, seasonRes] = await Promise.all([
-      fetch("https://api.jikan.moe/v4/top/anime?limit=100"),
+      fetch(`https://api.jikan.moe/v4/top/anime?limit=25&page=${Math.floor(offset/25)+1}`),
       fetch("https://api.jikan.moe/v4/seasons/now")
     ]);
 
-    const top = (await topRes.json()).data;
-    const season = (await seasonRes.json()).data;
+    const topJson = await topRes.json();
+    const seasonJson = await seasonRes.json();
 
-    // 🔥 1. RANDOM (from all top)
-    const randomPool = shuffle([...top]);
-    const randomPick = randomPool.slice(0, 4);
+    const topList = topJson.data || [];
+    const seasonList = seasonJson.data || [];
 
-    // 🔥 2. POPULAR (top 100 but randomized)
-    const popularPool = shuffle([...top]);
-    const popularPick = popularPool.slice(10, 14); // avoid overlap with random
+    // 🔥 pick groups
+    const popular = shuffle(topList).slice(0, 4);
+    const random = shuffle(topList).slice(10, 14);
+    const latest = shuffle(seasonList).slice(0, 4);
 
-    // 🔥 3. LATEST (season)
-    const latestPool = shuffle([...season]);
-    const latestPick = latestPool.slice(0, 4);
-
-    // 🔥 Combine + remove duplicates
-    const combined = uniqueById([
-      ...randomPick,
-      ...latestPick,
-      ...popularPick
-    ]);
+    // 🔥 combine + remove duplicates
+    const combined = uniqueById([...popular, ...random, ...latest]);
 
     render(combined.slice(0, 12));
 
   } catch (e) {
-    console.error(e);
+    console.error("Error:", e);
+    showError();
   }
 }
 
@@ -107,36 +105,44 @@ function render(list) {
     div.className = "card";
 
     div.innerHTML = `
-      <img src="${a.images.jpg.image_url}">
+      <img src="${a.images.jpg.image_url}" loading="lazy">
       <div class="title">${a.title}</div>
     `;
 
-    div.onclick = () => {
-      window.open(
-        `https://aniwatchtv.to/search?keyword=${encodeURIComponent(a.title)}`,
-        "_blank"
-      );
-    };
+    div.onclick = () => window.open(a.url, "_blank");
 
     el.appendChild(div);
   });
 }
 
-// 🔀 shuffle
+// 🔧 helpers
+
 function shuffle(arr) {
-  return arr.sort(() => Math.random() - 0.5);
+  return arr.sort(() => 0.5 - Math.random());
 }
 
-// 🚫 remove duplicates
 function uniqueById(arr) {
   const seen = new Set();
-  return arr.filter(a => {
-    if (seen.has(a.mal_id)) return false;
-    seen.add(a.mal_id);
+  return arr.filter(item => {
+    if (seen.has(item.mal_id)) return false;
+    seen.add(item.mal_id);
     return true;
   });
 }
 
+// UI states
+
+function showLoading() {
+  document.getElementById("row").innerHTML =
+    "<p style='opacity:0.6;padding:20px'>Loading...</p>";
+}
+
+function showError() {
+  document.getElementById("row").innerHTML =
+    "<p style='color:red;padding:20px'>Failed to load</p>";
+}
+
+// run
 loadAnime();
 </script>
 
