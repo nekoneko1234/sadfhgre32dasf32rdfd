@@ -5,16 +5,18 @@
 <title>MangaDex Widget</title>
 
 <style>
-body {
-  background: transparent;
-  color: #222;
-  font-family: Arial, sans-serif;
+/* 🔥 CRITICAL FIX: remove ALL background layers */
+html, body {
+  background: transparent !important;
   margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+  color: #222;
 }
 
-/* DARK MODE */
+/* DARK MODE TEXT */
 @media (prefers-color-scheme: dark) {
-  body {
+  html, body {
     color: #e6e6e6;
   }
 }
@@ -50,16 +52,9 @@ h2 {
   cursor: pointer;
   transition: all 0.2s ease;
   border-radius: 10px;
-  border: 1px solid rgba(0,0,0,0.08);
 }
 
-/* dark border */
-@media (prefers-color-scheme: dark) {
-  .card {
-    border: 1px solid rgba(255,255,255,0.08);
-  }
-}
-
+/* hover */
 .card:hover {
   transform: translateY(-4px) scale(1.05);
   box-shadow: 0 6px 20px rgba(0,0,0,0.15);
