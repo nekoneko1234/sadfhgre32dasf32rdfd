@@ -5,6 +5,158 @@
 <title>MangaDex Widget</title>
 
 <style>
+/* ✅ CORRECT TRANSPARENCY (not breaking Notion) */
+html, body {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  font-family: Arial, sans-serif;
+}
+
+/* TEXT */
+body {
+  color: #111;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    color: #e6e6e6;
+  }
+}
+
+/* HEADER */
+h2 {
+  margin: 20px 24px 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+/* CONTAINER */
+.container {
+  display: flex;
+  overflow-x: auto;
+  gap: 18px;
+  padding: 20px 24px;
+}
+
+/* SCROLLBAR */
+.container::-webkit-scrollbar {
+  height: 8px;
+}
+.container::-webkit-scrollbar-thumb {
+  background: rgba(120,120,120,0.4);
+  border-radius: 10px;
+}
+
+/* CARD */
+.card {
+  width: 150px;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* HOVER */
+.card:hover {
+  transform: translateY(-4px) scale(1.05);
+}
+
+.card:active {
+  transform: scale(0.97);
+}
+
+/* IMAGE */
+.card img {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+/* TITLE */
+.title {
+  font-size: 13px;
+  margin-top: 6px;
+  line-height: 1.3;
+  color: #222;
+
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+@media (prefers-color-scheme: dark) {
+  .title {
+    color: #dcdcdc;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<h2>Recommended</h2>
+<div class="container" id="manga-container"></div>
+
+<script>
+async function loadManga() {
+  const proxy = "https://plain-tree-92c5.negimanosensei.workers.dev/?url=";
+
+  const offset = Math.floor(Math.random() * 200);
+
+  const api = `https://api.mangadex.org/manga?limit=10&offset=${offset}&order[followedCount]=desc&includes[]=cover_art`;
+
+  try {
+    const res = await fetch(proxy + encodeURIComponent(api));
+    const json = await res.json();
+
+    const container = document.getElementById("manga-container");
+    container.innerHTML = "";
+
+    json.data.forEach(manga => {
+      const title = Object.values(manga.attributes.title)[0];
+
+      const coverRel = manga.relationships.find(r => r.type === "cover_art");
+      if (!coverRel || !coverRel.attributes) return;
+
+      const fileName = coverRel.attributes.fileName;
+
+      const rawCover = `https://uploads.mangadex.org/covers/${manga.id}/${fileName}`;
+      const coverUrl = proxy + encodeURIComponent(rawCover);
+
+      const div = document.createElement("div");
+      div.className = "card";
+
+      div.innerHTML = `
+        <img src="${coverUrl}" />
+        <div class="title">${title}</div>
+      `;
+
+      div.onclick = () => {
+        window.open(`https://mangadex.org/title/${manga.id}`, "_blank");
+      };
+
+      container.appendChild(div);
+    });
+
+  } catch (err) {
+    console.error("Error:", err);
+  }
+}
+
+loadManga();
+setInterval(loadManga, 43200000);
+</script>
+
+</body>
+</html><!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>MangaDex Widget</title>
+
+<style>
 /* BASE */
 html, body {
   margin: 0;
