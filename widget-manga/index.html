@@ -5,52 +5,60 @@
 <title>MangaDex Widget</title>
 
 <style>
-/* ✅ CORRECT TRANSPARENCY (not breaking Notion) */
+/* BASE */
 html, body {
   margin: 0;
   padding: 0;
-  background: transparent;
   font-family: Arial, sans-serif;
 }
 
-/* TEXT */
-body {
-  color: #111;
+/* CHATGPT-STYLE BACKGROUND */
+.wrapper {
+  background: #f7f7f8;
+  border-radius: 12px;
+  padding: 10px 0;
 }
 
 @media (prefers-color-scheme: dark) {
-  body {
-    color: #e6e6e6;
+  .wrapper {
+    background: #2f2f2f;
   }
 }
 
 /* HEADER */
 h2 {
-  margin: 20px 24px 0;
-  font-size: 18px;
+  margin: 16px 20px 0;
+  font-size: 16px;
   font-weight: 600;
+  color: #111;
+}
+
+@media (prefers-color-scheme: dark) {
+  h2 {
+    color: #e6e6e6;
+  }
 }
 
 /* CONTAINER */
 .container {
   display: flex;
   overflow-x: auto;
-  gap: 18px;
-  padding: 20px 24px;
+  gap: 14px;
+  padding: 16px 20px;
 }
 
 /* SCROLLBAR */
 .container::-webkit-scrollbar {
-  height: 8px;
+  height: 6px;
 }
 .container::-webkit-scrollbar-thumb {
-  background: rgba(120,120,120,0.4);
+  background: rgba(120,120,120,0.3);
   border-radius: 10px;
 }
 
 /* CARD */
 .card {
-  width: 150px;
+  width: 140px;
   flex-shrink: 0;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -58,27 +66,23 @@ h2 {
 
 /* HOVER */
 .card:hover {
-  transform: translateY(-4px) scale(1.05);
-}
-
-.card:active {
-  transform: scale(0.97);
+  transform: translateY(-3px);
 }
 
 /* IMAGE */
 .card img {
   width: 100%;
-  height: 220px;
+  height: 200px;
   object-fit: cover;
   border-radius: 8px;
 }
 
 /* TITLE */
 .title {
-  font-size: 13px;
+  font-size: 12px;
   margin-top: 6px;
   line-height: 1.3;
-  color: #222;
+  color: #333;
 
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -88,7 +92,7 @@ h2 {
 
 @media (prefers-color-scheme: dark) {
   .title {
-    color: #dcdcdc;
+    color: #ccc;
   }
 }
 </style>
@@ -96,8 +100,10 @@ h2 {
 
 <body>
 
-<h2>Recommended</h2>
-<div class="container" id="manga-container"></div>
+<div class="wrapper">
+  <h2>Recommended</h2>
+  <div class="container" id="manga-container"></div>
+</div>
 
 <script>
 async function loadManga() {
