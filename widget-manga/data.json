@@ -2,8 +2,13 @@
   "data": [
     {
       "id": "368ec7e8-41cc-475b-9487-567dc2746348",
-      "title": "Sample Manga",
+      "title": "Kimi wa 008",
       "cover": "3440d5c7-94f5-41fe-b864-ba0765b80b15.jpg"
+    },
+    {
+      "id": "a96676e5-8ae2-425e-b549-7f15dd34a6d8",
+      "title": "Blue Lock",
+      "cover": "e0c2f9f1-7a0b-4c6e-9b6d-1b9a0f9f7b55.jpg"
     }
   ]
 }
