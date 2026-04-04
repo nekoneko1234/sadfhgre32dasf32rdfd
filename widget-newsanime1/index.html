@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Anime News Widget</title>
+
+<style>
+  body {
+    margin: 0;
+    background: #2f2f2f;
+    font-family: Arial, sans-serif;
+    color: #fff;
+  }
+
+  .widget {
+    max-width: 700px;
+    margin: 20px auto;
+    padding: 10px;
+  }
+
+  .news-item {
+    display: flex;
+    gap: 15px;
+    padding: 12px 0;
+    border-bottom: 1px solid #444;
+  }
+
+  .thumbnail {
+    width: 120px;
+    height: 80px;
+    background: #bbb;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+
+  .thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .content {
+    flex: 1;
+  }
+
+  .title {
+    font-size: 18px;
+    line-height: 1.3;
+    margin-bottom: 6px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2; /* wrap like screenshot */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .date {
+    font-size: 12px;
+    color: #aaa;
+  }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    .news-item {
+      flex-direction: column;
+    }
+
+    .thumbnail {
+      width: 100%;
+      height: 180px;
+    }
+  }
+</style>
+</head>
+
+<body>
+
+<div class="widget" id="newsWidget">
+  <!-- News will load here -->
+</div>
+
+<script>
+const RSS_URL = "https://www.animenewsnetwork.com/news/rss.xml";
+
+// Use a free RSS-to-JSON proxy (needed for CORS)
+const API = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(RSS_URL)}`;
+
+async function loadNews() {
+  try {
+    const res = await fetch(API);
+    const data = await res.json();
+
+    const container = document.getElementById("newsWidget");
+
+    data.items.slice(0, 10).forEach(item => {
+      const div = document.createElement("div");
+      div.className = "news-item";
+
+      // Extract image from content (fallback if none)
+      let img = "";
+      const imgMatch = item.content.match(/<img.*?src="(.*?)"/);
+      if (imgMatch) img = imgMatch[1];
+
+      div.innerHTML = `
+        <div class="thumbnail">
+          ${img ? `<img src="${img}" alt="">` : ""}
+        </div>
+        <div class="content">
+          <div class="title">${item.title}</div>
+          <div class="date">${new Date(item.pubDate).toLocaleString()}</div>
+        </div>
+      `;
+
+      container.appendChild(div);
+    });
+
+  } catch (err) {
+    console.error("Error loading news:", err);
+  }
+}
+
+loadNews();
+</script>
+
+</body>
+</html>
