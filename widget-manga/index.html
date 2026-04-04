@@ -46,47 +46,27 @@
   <h2>Recommended</h2>
   <div class="row" id="mangaRow"></div>
 
-  <script>
+ <script>
 async function loadManga() {
-  try {
-    const proxy = "https://api.allorigins.win/raw?url=";
+  const res = await fetch("./data.json");
+  const data = await res.json();
 
-    const url = encodeURIComponent(
-      "https://api.mangadex.org/manga?limit=10&includes[]=cover_art&order[followedCount]=desc"
-    );
+  const container = document.getElementById("mangaRow");
+  container.innerHTML = "";
 
-    const res = await fetch(proxy + url);
-    const data = await res.json();
+  data.data.forEach(manga => {
+    const coverUrl = `https://uploads.mangadex.org/covers/${manga.id}/${manga.cover}.256.jpg`;
 
-    console.log(data);
+    const div = document.createElement("div");
+    div.className = "card";
 
-    const container = document.getElementById("mangaRow");
-    container.innerHTML = "";
+    div.innerHTML = `
+      <img src="${coverUrl}" />
+      <div class="title">${manga.title}</div>
+    `;
 
-    data.data.forEach(manga => {
-      const title = Object.values(manga.attributes.title)[0];
-
-      const coverRel = manga.relationships.find(r => r.type === "cover_art");
-      if (!coverRel) return;
-
-      const fileName = coverRel.attributes.fileName;
-
-      const coverUrl = `https://uploads.mangadex.org/covers/${manga.id}/${fileName}.256.jpg`;
-
-      const div = document.createElement("div");
-      div.className = "card";
-
-      div.innerHTML = `
-        <img src="${coverUrl}" />
-        <div class="title">${title}</div>
-      `;
-
-      container.appendChild(div);
-    });
-
-  } catch (err) {
-    console.error("ERROR:", err);
-  }
+    container.appendChild(div);
+  });
 }
 
 loadManga();
