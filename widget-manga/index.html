@@ -87,46 +87,55 @@
         </div>
 
     <script>
-        async function fetchManga() {
-            const container = document.getElementById('manga-container');
+    async function fetchManga() {
+        const container = document.getElementById('manga-container');
+        
+        // We use a proxy to get around the CORS security block
+        const apiUrl = 'https://api.mangadex.org/manga?limit=10&includes[]=cover_art&order[followedCount]=desc';
+        const proxiedUrl = `https://corsproxy.io/?${encodeURIComponent(apiUrl)}`;
+
+        try {
+            const response = await fetch(proxiedUrl);
             
-            try {
-                // Fetching 10 popular manga with cover_art included
-                const response = await fetch('https://api.mangadex.org/manga?limit=10&includes[]=cover_art&order[followedCount]=desc');
-                const json = await response.json();
+            if (!response.ok) throw new Error('Network response was not ok');
+            
+            const json = await response.json();
+            
+            // Clear the container in case of retries
+            container.innerHTML = '';
+
+            json.data.forEach(manga => {
+                const id = manga.id;
+                // Get the title (handles cases where the title object might have different language keys)
+                const title = manga.attributes.title.en || Object.values(manga.attributes.title)[0];
                 
-                json.data.forEach(manga => {
-                    const id = manga.id;
-                    const title = Object.values(manga.attributes.title)[0]; // Takes the first title available
-                    
-                    // Find the filename from the relationships array
-                    const coverItem = manga.relationships.find(rel => rel.type === 'cover_art');
-                    const fileName = coverItem ? coverItem.attributes.fileName : '';
-                    
-                    // Construct the MangaDex cover URL
-                    const coverUrl = `https://uploads.mangadex.org/covers/${id}/${fileName}.256.jpg`;
+                const coverItem = manga.relationships.find(rel => rel.type === 'cover_art');
+                const fileName = coverItem ? coverItem.attributes.fileName : '';
+                
+                // Construct the cover URL
+                const coverUrl = `https://uploads.mangadex.org/covers/${id}/${fileName}.256.jpg`;
 
-                    const card = document.createElement('a');
-                    card.className = 'manga-card';
-                    card.href = `https://mangadex.org/title/${id}`;
-                    card.target = '_blank';
+                const card = document.createElement('a');
+                card.className = 'manga-card';
+                card.href = `https://mangadex.org/title/${id}`;
+                card.target = '_blank';
 
-                    card.innerHTML = `
-                        <div class="cover-wrapper">
-                            <img src="${coverUrl}" alt="${title}" loading="lazy">
-                        </div>
-                        <div class="manga-title">${title}</div>
-                    `;
-                    
-                    container.appendChild(card);
-                });
-            } catch (error) {
-                console.error("Error fetching MangaDex data:", error);
-                container.innerHTML = "<p>Failed to load manga. Check console for details.</p>";
-            }
+                card.innerHTML = `
+                    <div class="cover-wrapper">
+                        <img src="${coverUrl}" alt="${title}" loading="lazy" onerror="this.src='https://via.placeholder.com/256x384?text=No+Cover'">
+                    </div>
+                    <div class="manga-title">${title}</div>
+                `;
+                
+                container.appendChild(card);
+            });
+        } catch (error) {
+            console.error("Error fetching MangaDex data:", error);
+            container.innerHTML = `<p style="color: #ff4d4d;">Failed to load manga. The API might be busy, try refreshing!</p>`;
         }
+    }
 
-        fetchManga();
-    </script>
+    fetchManga();
+</script>
 </body>
 </html>
