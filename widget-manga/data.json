@@ -1,14 +1,9 @@
 {
   "data": [
     {
-      "id": "a96676e5-8ae2-425e-b549-7f15dd34a6d8",
-      "title": "Blue Lock",
-      "cover": "e0c2f9f1-7a0b-4c6e-9b6d-1b9a0f9f7b55.jpg"
-    },
-    {
-      "id": "32d76f6c-8b5d-4c15-9b2d-7c5f8f3d5f1c",
-      "title": "Chainsaw Man",
-      "cover": "b8a7d2f0-3c6d-4d2b-9b1f-1a2b3c4d5e6f.jpg"
+      "id": "d77d37f9-d224-4105-a179-13ae6ce6658b",
+      "title": "Example Manga",
+      "cover": "535887fc-3638-4ff7-8e6e-0cbd0f83e6d5.png"
     }
   ]
 }
