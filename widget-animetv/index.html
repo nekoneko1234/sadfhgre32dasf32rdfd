@@ -1,1 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Anime Widget</title>
 
+<style>
+html, body {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  font-family: Arial, sans-serif;
+  color: #111;
+}
+
+@media (prefers-color-scheme: dark) {
+  body { color: #e6e6e6; }
+}
+
+h2 {
+  margin: 20px 24px 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.container {
+  display: flex;
+  overflow-x: auto;
+  gap: 18px;
+  padding: 20px 24px;
+}
+
+.container::-webkit-scrollbar {
+  height: 8px;
+}
+.container::-webkit-scrollbar-thumb {
+  background: rgba(120,120,120,0.4);
+  border-radius: 10px;
+}
+
+.card {
+  width: 150px;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px) scale(1.05);
+}
+
+.card img {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.title {
+  font-size: 13px;
+  margin-top: 6px;
+  line-height: 1.3;
+  color: #222;
+
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+@media (prefers-color-scheme: dark) {
+  .title { color: #dcdcdc; }
+}
+</style>
+</head>
+
+<body>
+
+<h2>Trending</h2>
+<div class="container" id="trending"></div>
+
+<h2>Popular</h2>
+<div class="container" id="popular"></div>
+
+<h2>Latest</h2>
+<div class="container" id="latest"></div>
+
+<script>
+const proxy = "https://plain-tree-92c5.negimanosensei.workers.dev/?url=";
+// If API works without proxy, set proxy = ""
+
+const API = "https://aniwatch-api-v1-0.onrender.com/api/home";
+
+async function loadAnime() {
+  try {
+    const res = await fetch(proxy + encodeURIComponent(API));
+    const json = await res.json();
+
+    renderRow("trending", json.trending || []);
+    renderRow("popular", json.popular || []);
+    renderRow("latest", json.latest || []);
+
+  } catch (err) {
+    console.error("Error loading anime:", err);
+  }
+}
+
+function renderRow(id, list) {
+  const container = document.getElementById(id);
+  container.innerHTML = "";
+
+  list.slice(0, 12).forEach(anime => {
+    const title =
+      anime.name ||
+      anime.title ||
+      anime.jname ||
+      "Unknown";
+
+    const cover =
+      anime.poster ||
+      anime.image ||
+      anime.img ||
+      "";
+
+    const link =
+      anime.url ||
+      anime.link ||
+      `https://aniwatchtv.to/${anime.id || ""}`;
+
+    const div = document.createElement("div");
+    div.className = "card";
+
+    div.innerHTML = `
+      <img src="${cover}" />
+      <div class="title">${title}</div>
+    `;
+
+    div.onclick = () => window.open(link, "_blank");
+
+    container.appendChild(div);
+  });
+}
+
+loadAnime();
+
+// refresh every 12 hours
+setInterval(loadAnime, 43200000);
+</script>
+
+</body>
+</html>
