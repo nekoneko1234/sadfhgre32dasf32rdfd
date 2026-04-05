@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>MAL Stats</title>
+</head>
+<body>
+
+  <h2>MyAnimeList Stats</h2>
+
+  <p>Completed Anime: <span id="anime">Loading...</span></p>
+  <p>Completed Manga: <span id="manga">Loading...</span></p>
+
+  <script>
+    async function getStats() {
+      try {
+        const res = await fetch("https://api.jikan.moe/v4/users/nekoneko1234/statistics");
+        const data = await res.json();
+
+        document.getElementById("anime").textContent = data.data.anime.completed;
+        document.getElementById("manga").textContent = data.data.manga.completed;
+
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    getStats();
+  </script>
+
+</body>
+</html>
