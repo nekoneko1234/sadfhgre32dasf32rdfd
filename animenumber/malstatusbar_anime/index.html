@@ -5,103 +5,82 @@
 <title>Anime Stats</title>
 
 <style>
-  * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-  }
+* { box-sizing:border-box;margin:0;padding:0; }
 
-  html, body {
-    background: #191b21; /* 🔥 SAME as box */
-    font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont,
-                 "Segoe UI", Helvetica, Arial, sans-serif;
-    color: #e6e6e6;
-  }
+html, body {
+  background:#191b21;
+  font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial;
+  color:#e6e6e6;
+}
 
-  .container {
-    width: 100%;
-    padding: 16px 18px;
-  }
+.container {
+  width:100%;
+  padding:16px 18px;
+}
 
-  h2 {
-    font-size: 20px;
-    font-weight: 600;
-    margin-bottom: 6px;
-  }
+h2 { font-size:20px;font-weight:600;margin-bottom:6px; }
 
-  .top {
-    font-size: 13px;
-    margin-bottom: 10px;
-    color: #bfc4cc;
-  }
+.top {
+  font-size:13px;
+  margin-bottom:10px;
+  color:#bfc4cc;
+}
 
-  .bar {
-    display: flex;
-    height: 8px;
-    margin-bottom: 14px;
-    background: #2a2d35;
-  }
+.bar {
+  display:flex;
+  height:8px;
+  margin-bottom:14px;
+  background:#2a2d35;
+}
 
-  .bar div {
-    height: 100%;
-  }
+.bar div { height:100%; }
 
-  .reading { background: #22c55e; }
-  .completed { background: #4f6fae; }
-  .onhold { background: #facc15; }
-  .dropped { background: #ef4444; }
-  .plan { background: #6b7280; }
+.reading{background:#22c55e;}
+.completed{background:#4f6fae;}
+.onhold{background:#facc15;}
+.dropped{background:#ef4444;}
+.plan{background:#6b7280;}
 
-  .grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-  }
+.grid {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
 
-  .row {
-    display: flex;
-    justify-content: space-between;
-    font-size: 13px;
-    padding: 5px 4px;
-    cursor: pointer;
-    transition: background 0.15s ease;
-  }
+.row {
+  display:flex;
+  justify-content:space-between;
+  font-size:13px;
+  padding:5px 4px;
+  cursor:pointer;
+}
 
-  .row:hover {
-    background: #242730;
-  }
+.row:hover { background:#242730; }
 
-  .label {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-  }
+.label {
+  display:flex;
+  align-items:center;
+  gap:7px;
+}
 
-  .dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-  }
+.dot {
+  width:8px;
+  height:8px;
+  border-radius:50%;
+}
 
-  .green { background: #22c55e; }
-  .blue { background: #4f6fae; }
-  .yellow { background: #facc15; }
-  .red { background: #ef4444; }
-  .gray { background: #6b7280; }
+.green{background:#22c55e;}
+.blue{background:#4f6fae;}
+.yellow{background:#facc15;}
+.red{background:#ef4444;}
+.gray{background:#6b7280;}
 
-  .right .row {
-    cursor: default;
-  }
+.right .row { cursor:default; }
+.right .row:hover { background:none; }
 
-  .right .row:hover {
-    background: none;
-  }
-
-  @media (max-width: 480px) {
-    .grid {
-      grid-template-columns: 1fr;
-    }
-  }
+@media (max-width:480px){
+  .grid{grid-template-columns:1fr;}
+}
 </style>
 </head>
 
@@ -111,6 +90,7 @@
   <h2>Anime Stats</h2>
 
   <div class="top">
+    Days: <strong id="days">0</strong> &nbsp;&nbsp;
     Mean Score: <strong id="score">0</strong>
   </div>
 
@@ -126,39 +106,35 @@
 const username = "nekoneko1234";
 
 const statusLinks = {
-  reading: 1,
-  completed: 2,
-  on_hold: 3,
-  dropped: 4,
-  plan: 6
+  reading:1, completed:2, on_hold:3, dropped:4, plan:6
 };
 
-async function loadAnime() {
-  const res = await fetch("https://malstatusbar.negimanosensei.workers.dev");
+async function loadAnime(){
+  const res = await fetch("https://malstatusbar.negimanosensei.workers.dev/");
   const data = await res.json();
   const anime = data.anime;
 
   document.getElementById("score").innerText = anime.mean_score;
+  document.getElementById("days").innerText = anime.totals.days;
 
   const total = anime.total_entries;
 
   const statuses = [
-    { key:"reading", label:"Watching", class:"green" },
-    { key:"completed", label:"Completed", class:"blue" },
-    { key:"on_hold", label:"On-Hold", class:"yellow" },
-    { key:"dropped", label:"Dropped", class:"red" },
-    { key:"plan", label:"Plan to Watch", class:"gray" }
+    {key:"reading",label:"Watching",class:"green"},
+    {key:"completed",label:"Completed",class:"blue"},
+    {key:"on_hold",label:"On-Hold",class:"yellow"},
+    {key:"dropped",label:"Dropped",class:"red"},
+    {key:"plan",label:"Plan to Watch",class:"gray"}
   ];
 
   // BAR
   const bar = document.getElementById("bar");
   bar.innerHTML = "";
-
-  statuses.forEach(s => {
+  statuses.forEach(s=>{
     const percent = total ? (anime.status[s.key]/total)*100 : 0;
     const div = document.createElement("div");
-    div.className = s.key === "on_hold" ? "onhold" : s.key;
-    div.style.width = percent + "%";
+    div.className = s.key==="on_hold"?"onhold":s.key;
+    div.style.width = percent+"%";
     bar.appendChild(div);
   });
 
@@ -166,9 +142,9 @@ async function loadAnime() {
   const left = document.getElementById("left");
   left.innerHTML = "";
 
-  statuses.forEach(s => {
+  statuses.forEach(s=>{
     const row = document.createElement("div");
-    row.className = "row";
+    row.className="row";
 
     row.innerHTML = `
       <div class="label">
@@ -178,12 +154,8 @@ async function loadAnime() {
       <div>${anime.status[s.key]}</div>
     `;
 
-    row.onclick = () => {
-      const status = statusLinks[s.key];
-      window.open(
-        `https://myanimelist.net/animelist/${username}?status=${status}`,
-        "_blank"
-      );
+    row.onclick=()=>{
+      window.open(`https://myanimelist.net/animelist/${username}?status=${statusLinks[s.key]}`,"_blank");
     };
 
     left.appendChild(row);
@@ -192,7 +164,8 @@ async function loadAnime() {
   // RIGHT
   document.getElementById("right").innerHTML = `
     <div class="row"><div>Total Entries</div><div>${anime.total_entries}</div></div>
-    <div class="row"><div>Episodes</div><div>${anime.totals.episodes}</div></div>
+    <div class="row"><div>Rewatched</div><div>${anime.totals.rewatched}</div></div>
+    <div class="row"><div>Episodes</div><div>${anime.totals.episodes.toLocaleString()}</div></div>
   `;
 }
 
