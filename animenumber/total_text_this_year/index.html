@@ -1,44 +1,75 @@
-<script>
-async function getYearlyCount() {
-  const year = new Date().getFullYear();
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Total Series This Year</title>
+</head>
+<body>
 
-  try {
-    const res = await fetch("https://api.jikan.moe/v4/users/nekoneko1234/mangalist?limit=300");
-    const json = await res.json();
+  <h2>Total Series Tahun Ini</h2>
+  <p id="result">Loading...</p>
 
-    // DEBUG dulu
-    console.log(json);
+  <script>
+    async function getYearlyCount() {
+      const year = new Date().getFullYear();
+      let page = 1;
+      let counted = new Set();
 
-    if (!json.data) {
-      throw new Error("Data tidak ada (kemungkinan rate limit / API error)");
+      try {
+        while (true) {
+          const res = await fetch(`https://api.jikan.moe/v4/users/nekoneko1234/mangalist?page=${page}`);
+
+          // handle kalau request gagal
+          if (!res.ok) {
+            throw new Error("HTTP error: " + res.status);
+          }
+
+          const json = await res.json();
+
+          // kalau API error / rate limit
+          if (!json || !json.data) {
+            throw new Error("API error / rate limit");
+          }
+
+          json.data.forEach(item => {
+            const id = item.manga.mal_id;
+
+            const start = item.start_date ? new Date(item.start_date) : null;
+            const end = item.finish_date ? new Date(item.finish_date) : null;
+
+            const startYear = start ? start.getFullYear() : null;
+            const endYear = end ? end.getFullYear() : null;
+
+            // RULE INTI
+            if (
+              (endYear === year) ||
+              (startYear === year && !endYear)
+            ) {
+              counted.add(id);
+            }
+          });
+
+          // stop kalau sudah page terakhir
+          if (!json.pagination || !json.pagination.has_next_page) {
+            break;
+          }
+
+          page++;
+
+          // delay kecil biar gak kena rate limit
+          await new Promise(r => setTimeout(r, 500));
+        }
+
+        document.getElementById("result").textContent = counted.size;
+
+      } catch (err) {
+        console.error(err);
+        document.getElementById("result").textContent = "Gagal ambil data";
+      }
     }
 
-    const counted = new Set();
+    getYearlyCount();
+  </script>
 
-    json.data.forEach(item => {
-      const id = item.manga.mal_id;
-
-      const start = item.start_date ? new Date(item.start_date) : null;
-      const end = item.finish_date ? new Date(item.finish_date) : null;
-
-      const startYear = start ? start.getFullYear() : null;
-      const endYear = end ? end.getFullYear() : null;
-
-      if (
-        (endYear === year) ||
-        (startYear === year && !endYear)
-      ) {
-        counted.add(id);
-      }
-    });
-
-    document.getElementById("result").textContent = counted.size;
-
-  } catch (err) {
-    console.error(err);
-    document.getElementById("result").textContent = "Error";
-  }
-}
-
-getYearlyCount();
-</script>
+</body>
+</html>
