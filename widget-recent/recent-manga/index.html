@@ -148,11 +148,39 @@ document.addEventListener("DOMContentLoaded", async () => {
       const colorClass = statusColorClass[status] || "gray";
 
       // time formatting
-      const date = new Date(item.pubDate);
-      const now = new Date();
-      const diff = (now - date) / 1000;
+     function toWIB(date) {
+  // convert to UTC first, then add +7 hours
+  const utc = date.getTime() + (date.getTimezoneOffset() * 60000);
+  return new Date(utc + (7 * 60 * 60 * 1000));
+}
 
-      let timeText = date.toLocaleDateString();
+const date = toWIB(new Date(item.pubDate));
+const now = toWIB(new Date());
+
+const diff = (now - date) / 1000;
+
+let timeText = "";
+
+// < 1 hour
+if (diff < 3600) {
+  const mins = Math.floor(diff / 60);
+  timeText = mins <= 1 ? "Just now" : mins + " minutes ago";
+}
+// < 24 hours
+else if (diff < 86400) {
+  const hours = Math.floor(diff / 3600);
+  timeText = hours + " hours ago";
+}
+// fallback date (WIB)
+else {
+  timeText = date.toLocaleString("en-GB", {
+    timeZone: "Asia/Jakarta",
+    day: "2-digit",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+}
 
       if (diff < 86400) {
         const hours = Math.floor(diff / 3600);
