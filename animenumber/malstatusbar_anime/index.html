@@ -12,37 +12,36 @@
   }
 
   html, body {
-    background: transparent !important;
-    font-family: Arial, sans-serif;
+    background: transparent;
+    font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont,
+      "Segoe UI", Helvetica, Arial, sans-serif;
     color: #e5e7eb;
   }
 
   .container {
     width: 100%;
-    background: linear-gradient(145deg, #1a1d24, #151821);
-    padding: 16px 18px;
-    border-radius: 12px;
-    overflow: hidden;
+    background: #191b22; /* flat, no gradient */
+    padding: 14px 16px;
   }
 
   h2 {
-    font-size: 20px;
+    font-size: 18px;
+    font-weight: 600;
     margin-bottom: 6px;
   }
 
   .top {
     font-size: 13px;
+    color: #a1a1aa;
     margin-bottom: 10px;
-    color: #cbd5e1;
   }
 
   .bar {
     display: flex;
-    height: 10px;
-    border-radius: 6px;
+    height: 8px;
     overflow: hidden;
     margin-bottom: 12px;
-    background: #22252c;
+    background: #2a2d35;
   }
 
   .bar div { height: 100%; }
@@ -56,32 +55,31 @@
   .grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 10px;
+    gap: 12px;
   }
 
   .row {
     display: flex;
     justify-content: space-between;
     font-size: 13px;
-    padding: 6px 6px;
-    border-radius: 6px;
+    padding: 4px 2px;
     cursor: pointer;
-    transition: all 0.15s ease;
+    transition: background 0.15s ease;
   }
 
   .row:hover {
-    background: rgba(255,255,255,0.05);
+    background: #23262d; /* subtle Notion hover */
   }
 
   .label {
     display: flex;
     align-items: center;
-    gap: 7px;
+    gap: 6px;
   }
 
   .dot {
-    width: 8px;
-    height: 8px;
+    width: 7px;
+    height: 7px;
     border-radius: 50%;
   }
 
@@ -164,7 +162,7 @@ async function loadAnime() {
     bar.appendChild(div);
   });
 
-  // LEFT (CLICKABLE)
+  // LEFT
   const left = document.getElementById("left");
   left.innerHTML = "";
 
@@ -180,11 +178,12 @@ async function loadAnime() {
       <div>${anime.status[s.key]}</div>
     `;
 
-    // 🔥 CLICK HANDLER
     row.onclick = () => {
       const status = statusLinks[s.key];
-      const url = `https://myanimelist.net/animelist/${username}?status=${status}`;
-      window.open(url, "_blank");
+      window.open(
+        `https://myanimelist.net/animelist/${username}?status=${status}`,
+        "_blank"
+      );
     };
 
     left.appendChild(row);
