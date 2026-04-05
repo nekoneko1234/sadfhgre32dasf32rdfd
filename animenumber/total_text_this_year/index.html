@@ -1,75 +1,26 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Total Series This Year</title>
-</head>
+<html>
 <body>
 
-  <h2>Total Series Tahun Ini</h2>
-  <p id="result">Loading...</p>
+<h2>Total Series Tahun Ini</h2>
+<p id="result">Loading...</p>
 
-  <script>
-    async function getYearlyCount() {
-      const year = new Date().getFullYear();
-      let page = 1;
-      let counted = new Set();
+<script>
+async function loadData() {
+  try {
+    const res = await fetch("https://totaltextthisyear.negimanosensei.workers.dev");
+    const data = await res.json();
 
-      try {
-        while (true) {
-          const res = await fetch(`https://api.jikan.moe/v4/users/nekoneko1234/mangalist?page=${page}`);
+    document.getElementById("result").textContent = data.total;
 
-          // handle kalau request gagal
-          if (!res.ok) {
-            throw new Error("HTTP error: " + res.status);
-          }
+  } catch (err) {
+    console.error(err);
+    document.getElementById("result").textContent = "Error";
+  }
+}
 
-          const json = await res.json();
-
-          // kalau API error / rate limit
-          if (!json || !json.data) {
-            throw new Error("API error / rate limit");
-          }
-
-          json.data.forEach(item => {
-            const id = item.manga.mal_id;
-
-            const start = item.start_date ? new Date(item.start_date) : null;
-            const end = item.finish_date ? new Date(item.finish_date) : null;
-
-            const startYear = start ? start.getFullYear() : null;
-            const endYear = end ? end.getFullYear() : null;
-
-            // RULE INTI
-            if (
-              (endYear === year) ||
-              (startYear === year && !endYear)
-            ) {
-              counted.add(id);
-            }
-          });
-
-          // stop kalau sudah page terakhir
-          if (!json.pagination || !json.pagination.has_next_page) {
-            break;
-          }
-
-          page++;
-
-          // delay kecil biar gak kena rate limit
-          await new Promise(r => setTimeout(r, 500));
-        }
-
-        document.getElementById("result").textContent = counted.size;
-
-      } catch (err) {
-        console.error(err);
-        document.getElementById("result").textContent = "Gagal ambil data";
-      }
-    }
-
-    getYearlyCount();
-  </script>
+loadData();
+</script>
 
 </body>
 </html>
