@@ -24,7 +24,7 @@
     width: 100%;
     height: 100%;
     opacity: 0;
-    transition: opacity 0.6s ease;
+    transition: opacity 0.8s ease;
   }
 
   .slide img {
@@ -56,13 +56,12 @@
     cursor: pointer;
   }
 
-  .status {
+  .loading {
     position: absolute;
-    bottom: 10px;
-    left: 10px;
     color: white;
-    font-size: 12px;
-    opacity: 0.7;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
   }
 </style>
 </head>
@@ -70,7 +69,7 @@
 <body>
 
 <div class="slider" id="slider">
-  <div class="status" id="status">Loading...</div>
+  <div class="loading" id="loading">Loading Instagram...</div>
 </div>
 
 <div class="controls">
@@ -81,18 +80,11 @@
 <script>
 const API_URL = "https://test-slide-show-ig.negimanosensei.workers.dev/";
 
-// 🔥 fallback images (always works)
-const fallbackImages = [
-  "https://picsum.photos/800/1200?random=1",
-  "https://picsum.photos/800/1200?random=2",
-  "https://picsum.photos/800/1200?random=3",
-  "https://picsum.photos/800/1200?random=4"
-];
-
 let images = [];
 let slides = [];
 let current = 0;
 
+// 🔀 shuffle
 function shuffle(arr) {
   for (let i = arr.length - 1; i > 0; i--) {
     let j = Math.floor(Math.random() * (i + 1));
@@ -100,16 +92,20 @@ function shuffle(arr) {
   }
 }
 
+// 🎯 render
 function initSlider() {
   const slider = document.getElementById("slider");
-  slider.innerHTML = '<div class="status" id="status"></div>';
+  slider.innerHTML = "";
 
   images.forEach((src, index) => {
     const div = document.createElement("div");
     div.classList.add("slide");
     if (index === 0) div.classList.add("active");
 
-    div.innerHTML = `<img src="${src}" loading="lazy">`;
+    div.innerHTML = `
+      <img src="${API_URL}img?url=${encodeURIComponent(src)}" loading="lazy">
+    `;
+
     slider.appendChild(div);
   });
 
@@ -118,6 +114,7 @@ function initSlider() {
   setInterval(nextSlide, 4000);
 }
 
+// ▶ controls
 function showSlide(index) {
   slides[current].classList.remove("active");
   current = (index + slides.length) % slides.length;
@@ -132,30 +129,25 @@ function prevSlide() {
   showSlide(current - 1);
 }
 
-// 🚀 LOAD IMAGES
+// 🚀 load images
 async function loadImages() {
-  const status = document.getElementById("status");
-
   try {
     const res = await fetch(API_URL);
     const data = await res.json();
 
     if (!data || data.length === 0) {
-      status.innerText = "Using fallback images";
-      images = fallbackImages;
-    } else {
-      status.innerText = "Loaded from API";
-      images = data;
+      document.getElementById("loading").innerText = "No images found";
+      return;
     }
+
+    images = data;
+    shuffle(images);
+    initSlider();
 
   } catch (err) {
     console.error(err);
-    status.innerText = "API failed → fallback";
-    images = fallbackImages;
+    document.getElementById("loading").innerText = "Failed to load images";
   }
-
-  shuffle(images);
-  initSlider();
 }
 
 loadImages();
