@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Manga Stats</title>
+
+<style>
+* { box-sizing:border-box;margin:0;padding:0; }
+
+html, body {
+  background:#191b21;
+  font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial;
+  color:#e6e6e6;
+}
+
+.container {
+  width:100%;
+  padding:16px 18px;
+}
+
+h2 { font-size:20px;font-weight:600;margin-bottom:6px; }
+
+.top {
+  font-size:13px;
+  margin-bottom:10px;
+  color:#bfc4cc;
+}
+
+.bar {
+  display:flex;
+  height:8px;
+  margin-bottom:14px;
+  background:#2a2d35;
+}
+
+.bar div { height:100%; }
+
+.reading{background:#22c55e;}
+.completed{background:#4f6fae;}
+.onhold{background:#facc15;}
+.dropped{background:#ef4444;}
+.plan{background:#6b7280;}
+
+.grid {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+
+.row {
+  display:flex;
+  justify-content:space-between;
+  font-size:13px;
+  padding:5px 4px;
+  cursor:pointer;
+}
+
+.row:hover { background:#242730; }
+
+.label {
+  display:flex;
+  align-items:center;
+  gap:7px;
+}
+
+.dot {
+  width:8px;
+  height:8px;
+  border-radius:50%;
+}
+
+.green{background:#22c55e;}
+.blue{background:#4f6fae;}
+.yellow{background:#facc15;}
+.red{background:#ef4444;}
+.gray{background:#6b7280;}
+
+.right .row { cursor:default; }
+.right .row:hover { background:none; }
+
+@media (max-width:480px){
+  .grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h2>Manga Stats</h2>
+
+  <div class="top">
+    Mean Score: <strong id="score">0</strong>
+  </div>
+
+  <div class="bar" id="bar"></div>
+
+  <div class="grid">
+    <div id="left"></div>
+    <div id="right" class="right"></div>
+  </div>
+</div>
+
+<script>
+const username = "nekoneko1234";
+
+const statusLinks = {
+  reading:1, completed:2, on_hold:3, dropped:4, plan:6
+};
+
+async function loadManga(){
+  const res = await fetch("https://malstatusbar.negimanosensei.workers.dev/");
+  const data = await res.json();
+  const manga = data.manga;
+
+  document.getElementById("score").innerText = manga.mean_score;
+
+  const total = manga.total_entries;
+
+  const statuses = [
+    {key:"reading",label:"Reading",class:"green"},
+    {key:"completed",label:"Completed",class:"blue"},
+    {key:"on_hold",label:"On-Hold",class:"yellow"},
+    {key:"dropped",label:"Dropped",class:"red"},
+    {key:"plan",label:"Plan to Read",class:"gray"}
+  ];
+
+  // BAR
+  const bar = document.getElementById("bar");
+  bar.innerHTML = "";
+  statuses.forEach(s=>{
+    const percent = total ? (manga.status[s.key]/total)*100 : 0;
+    const div = document.createElement("div");
+    div.className = s.key==="on_hold"?"onhold":s.key;
+    div.style.width = percent+"%";
+    bar.appendChild(div);
+  });
+
+  // LEFT
+  const left = document.getElementById("left");
+  left.innerHTML = "";
+
+  statuses.forEach(s=>{
+    const row = document.createElement("div");
+    row.className="row";
+
+    row.innerHTML = `
+      <div class="label">
+        <div class="dot ${s.class}"></div>
+        ${s.label}
+      </div>
+      <div>${manga.status[s.key]}</div>
+    `;
+
+    row.onclick=()=>{
+      window.open(`https://myanimelist.net/mangalist/${username}?status=${statusLinks[s.key]}`,"_blank");
+    };
+
+    left.appendChild(row);
+  });
+
+  // RIGHT
+  document.getElementById("right").innerHTML = `
+    <div class="row"><div>Total Entries</div><div>${manga.total_entries}</div></div>
+    <div class="row"><div>Reread</div><div>${manga.totals.reread}</div></div>
+    <div class="row"><div>Chapters</div><div>${manga.totals.chapters.toLocaleString()}</div></div>
+    <div class="row"><div>Volumes</div><div>${manga.totals.volumes.toLocaleString()}</div></div>
+  `;
+}
+
+loadManga();
+</script>
+
+</body>
+</html>
