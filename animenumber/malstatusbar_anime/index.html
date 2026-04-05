@@ -12,29 +12,21 @@
   }
 
   html, body {
-    background: transparent; /* 🔥 important for embed */
+    background: transparent !important;
     font-family: Arial, sans-serif;
     color: #e5e7eb;
-  }
-
-  /* REMOVE CENTERING (this caused your issue) */
-  body {
-    padding: 0;
   }
 
   .container {
     width: 100%;
     background: linear-gradient(145deg, #1a1d24, #151821);
     padding: 16px 18px;
-    border-radius: 10px;
-
-    /* prevent overflow scroll */
+    border-radius: 12px;
     overflow: hidden;
   }
 
   h2 {
     font-size: 20px;
-    font-weight: 500;
     margin-bottom: 6px;
   }
 
@@ -53,9 +45,7 @@
     background: #22252c;
   }
 
-  .bar div {
-    height: 100%;
-  }
+  .bar div { height: 100%; }
 
   .reading { background: #22c55e; }
   .completed { background: #4f6fae; }
@@ -73,7 +63,14 @@
     display: flex;
     justify-content: space-between;
     font-size: 13px;
-    margin: 3px 0;
+    padding: 6px 6px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .row:hover {
+    background: rgba(255,255,255,0.05);
   }
 
   .label {
@@ -94,7 +91,14 @@
   .red { background: #ef4444; }
   .gray { background: #6b7280; }
 
-  /* 📱 Mobile */
+  .right .row {
+    cursor: default;
+  }
+
+  .right .row:hover {
+    background: transparent;
+  }
+
   @media (max-width: 480px) {
     .grid {
       grid-template-columns: 1fr;
@@ -116,11 +120,21 @@
 
   <div class="grid">
     <div id="left"></div>
-    <div id="right"></div>
+    <div id="right" class="right"></div>
   </div>
 </div>
 
 <script>
+const username = "nekoneko1234";
+
+const statusLinks = {
+  reading: 1,
+  completed: 2,
+  on_hold: 3,
+  dropped: 4,
+  plan: 6
+};
+
 async function loadAnime() {
   const res = await fetch("https://malstatusbar.negimanosensei.workers.dev");
   const data = await res.json();
@@ -150,19 +164,30 @@ async function loadAnime() {
     bar.appendChild(div);
   });
 
-  // LEFT
+  // LEFT (CLICKABLE)
   const left = document.getElementById("left");
   left.innerHTML = "";
 
   statuses.forEach(s => {
-    left.innerHTML += `
-      <div class="row">
-        <div class="label">
-          <div class="dot ${s.class}"></div>
-          ${s.label}
-        </div>
-        <div>${anime.status[s.key]}</div>
-      </div>`;
+    const row = document.createElement("div");
+    row.className = "row";
+
+    row.innerHTML = `
+      <div class="label">
+        <div class="dot ${s.class}"></div>
+        ${s.label}
+      </div>
+      <div>${anime.status[s.key]}</div>
+    `;
+
+    // 🔥 CLICK HANDLER
+    row.onclick = () => {
+      const status = statusLinks[s.key];
+      const url = `https://myanimelist.net/animelist/${username}?status=${status}`;
+      window.open(url, "_blank");
+    };
+
+    left.appendChild(row);
   });
 
   // RIGHT
