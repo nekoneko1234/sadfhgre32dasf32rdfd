@@ -1,25 +1,138 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>MAL Stats</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0f0f0f;
+      color: #fff;
+      padding: 20px;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 15px;
+    }
+
+    .card {
+      background: #1a1a1a;
+      padding: 20px;
+      border-radius: 12px;
+    }
+
+    .title {
+      font-size: 14px;
+      opacity: 0.7;
+      margin-bottom: 10px;
+    }
+
+    .value {
+      font-size: 28px;
+      font-weight: bold;
+    }
+
+    .section {
+      margin-top: 30px;
+    }
+  </style>
+</head>
 <body>
 
-<h2>Total Series Tahun Ini</h2>
-<p id="result">Loading...</p>
+<h1>MAL Activity Stats</h1>
+
+<div id="year"></div>
+<div id="month"></div>
 
 <script>
-async function loadData() {
+async function loadStats() {
   try {
-    const res = await fetch("https://totaltextthisyear.negimanosensei.workers.dev");
+    const res = await fetch("https://YOUR-WORKER-URL.workers.dev");
     const data = await res.json();
 
-    document.getElementById("result").textContent = data.total;
+    renderYear(data);
+    renderMonth(data);
 
   } catch (err) {
     console.error(err);
-    document.getElementById("result").textContent = "Error";
+    document.body.innerHTML = "Error loading data";
   }
 }
 
-loadData();
+function renderYear(data) {
+  const html = `
+    <div class="section">
+      <h2>📅 Year ${data.year}</h2>
+      <div class="grid">
+
+        <div class="card">
+          <div class="title">Anime (Only)</div>
+          <div class="value">${data.anime.year_only}</div>
+        </div>
+
+        <div class="card">
+          <div class="title">Anime (Extended)</div>
+          <div class="value">${data.anime.year_extended}</div>
+        </div>
+
+        <div class="card">
+          <div class="title">Manga (Only)</div>
+          <div class="value">${data.manga.year_only}</div>
+        </div>
+
+        <div class="card">
+          <div class="title">Manga (Extended)</div>
+          <div class="value">${data.manga.year_extended}</div>
+        </div>
+
+      </div>
+    </div>
+  `;
+
+  document.getElementById("year").innerHTML = html;
+}
+
+function renderMonth(data) {
+  const html = `
+    <div class="section">
+      <h2>📅 Month ${data.month}</h2>
+      <div class="grid">
+
+        <div class="card">
+          <div class="title">Anime (Only)</div>
+          <div class="value">${data.anime.month_only}</div>
+        </div>
+
+        <div class="card">
+          <div class="title">Anime (Extended)</div>
+          <div class="value">${data.anime.month_extended}</div>
+        </div>
+
+        <div class="card">
+          <div class="title">Manga (Only)</div>
+          <div class="value">${data.manga.month_only}</div>
+        </div>
+
+        <div class="card">
+          <div class="title">Manga (Extended)</div>
+          <div class="value">${data.manga.month_extended}</div>
+        </div>
+
+      </div>
+    </div>
+  `;
+
+  document.getElementById("month").innerHTML = html;
+}
+
+loadStats();
 </script>
 
 </body>
