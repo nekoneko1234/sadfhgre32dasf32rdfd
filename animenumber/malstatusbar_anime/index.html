@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Anime Stats</title>
+<style>
+  body { background:#0f1115;color:#ddd;font-family:Arial; }
+  .container { width:600px;margin:40px auto;background:#1a1d24;padding:20px;border-radius:6px; }
+  h2 { margin-bottom:10px;font-weight:normal; }
+  .top { display:flex;justify-content:space-between;margin-bottom:10px; }
+  .bar { display:flex;height:14px;border-radius:3px;overflow:hidden;margin-bottom:15px; }
+  .bar div { height:100%; }
+  .reading{background:#2ecc71;} .completed{background:#3b5998;}
+  .onhold{background:#f1c40f;} .dropped{background:#e74c3c;}
+  .plan{background:#7f8c8d;}
+  .grid{display:flex;justify-content:space-between;}
+  .col{width:48%;}
+  .row{display:flex;justify-content:space-between;margin:6px 0;}
+  .label{display:flex;align-items:center;gap:8px;}
+  .dot{width:10px;height:10px;border-radius:50%;}
+  .green{background:#2ecc71;} .blue{background:#3b5998;}
+  .yellow{background:#f1c40f;} .red{background:#e74c3c;}
+  .gray{background:#7f8c8d;}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h2>Anime Stats</h2>
+
+  <div class="top">
+    <div>Mean Score: <strong id="score">0</strong></div>
+  </div>
+
+  <div class="bar" id="bar"></div>
+
+  <div class="grid">
+    <div class="col" id="left"></div>
+    <div class="col" id="right"></div>
+  </div>
+</div>
+
+<script>
+async function loadAnime() {
+  const res = await fetch("https://malstatusbar.negimanosensei.workers.dev");
+  const data = await res.json();
+  const anime = data.anime;
+
+  document.getElementById("score").innerText = anime.mean_score;
+
+  const total = anime.total_entries;
+
+  const statuses = [
+    { key:"reading", label:"Watching", class:"green" },
+    { key:"completed", label:"Completed", class:"blue" },
+    { key:"on_hold", label:"On-Hold", class:"yellow" },
+    { key:"dropped", label:"Dropped", class:"red" },
+    { key:"plan", label:"Plan to Watch", class:"gray" }
+  ];
+
+  const bar = document.getElementById("bar");
+  bar.innerHTML = "";
+
+  statuses.forEach(s => {
+    const percent = total ? (anime.status[s.key]/total)*100 : 0;
+    const div = document.createElement("div");
+    div.className = s.key === "on_hold" ? "onhold" : s.key;
+    div.style.width = percent + "%";
+    bar.appendChild(div);
+  });
+
+  const left = document.getElementById("left");
+  left.innerHTML = "";
+
+  statuses.forEach(s => {
+    left.innerHTML += `
+      <div class="row">
+        <div class="label">
+          <div class="dot ${s.class}"></div>
+          ${s.label}
+        </div>
+        <div>${anime.status[s.key]}</div>
+      </div>`;
+  });
+
+  document.getElementById("right").innerHTML = `
+    <div class="row"><div>Total Entries</div><div>${anime.total_entries}</div></div>
+    <div class="row"><div>Episodes</div><div>${anime.totals.episodes}</div></div>
+  `;
+}
+
+loadAnime();
+</script>
+
+</body>
+</html>
