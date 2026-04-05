@@ -90,6 +90,8 @@ h2 { font-size:20px;font-weight:600;margin-bottom:6px; }
   <h2>Manga Stats</h2>
 
   <div class="top">
+    Days: <strong id="days">0</strong>
+    &nbsp;&nbsp;
     Mean Score: <strong id="score">0</strong>
   </div>
 
@@ -114,6 +116,7 @@ async function loadManga(){
   const manga = data.manga;
 
   document.getElementById("score").innerText = manga.mean_score;
+  document.getElementById("days").innerText = manga.totals.days;
 
   const total = manga.total_entries;
 
