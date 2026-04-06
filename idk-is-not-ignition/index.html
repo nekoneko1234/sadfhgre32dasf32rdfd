@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Notion Data Table</title>
+</head>
+<body>
+
+  <h2>Data dari Notion</h2>
+
+  <table border="1" cellpadding="8" cellspacing="0">
+    <thead>
+      <tr id="table-head"></tr>
+    </thead>
+    <tbody id="table-body"></tbody>
+  </table>
+
+  <script>
+    const API_URL = "https://is-just-another24-not-ignition-test.negimanosensei.workers.dev/";
+
+    async function loadData() {
+      const res = await fetch(API_URL);
+      const data = await res.json();
+
+      if (!data.length) {
+        document.body.innerHTML += "<p>Data kosong</p>";
+        return;
+      }
+
+      // 🔹 Ambil semua key dari object pertama
+      const headers = Object.keys(data[0]);
+
+      // 🔹 Render header
+      const headRow = document.getElementById("table-head");
+      headers.forEach(key => {
+        const th = document.createElement("th");
+        th.innerText = key;
+        headRow.appendChild(th);
+      });
+
+      // 🔹 Render body
+      const body = document.getElementById("table-body");
+
+      data.forEach(item => {
+        const tr = document.createElement("tr");
+
+        headers.forEach(key => {
+          const td = document.createElement("td");
+          td.innerText = item[key] ?? "";
+          tr.appendChild(td);
+        });
+
+        body.appendChild(tr);
+      });
+    }
+
+    loadData();
+  </script>
+
+</body>
+</html>
