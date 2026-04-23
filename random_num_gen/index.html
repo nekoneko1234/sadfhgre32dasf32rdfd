@@ -18,9 +18,9 @@
       color: var(--text-color);
       display: flex;
       justify-content: center;
-      align-items: center;
+      align-items: flex-start; /* align from top so it won’t crop */
       min-height: 100vh;
-      padding: 1rem;
+      padding: 2rem 1rem;
       box-sizing: border-box;
     }
 
@@ -31,7 +31,7 @@
     }
 
     h1 {
-      font-size: 1.4rem;
+      font-size: clamp(1.2rem, 2vw, 1.6rem);
       margin-bottom: 1.5rem;
       color: var(--accent-color);
       font-weight: 500;
@@ -51,6 +51,7 @@
       padding: 0.5rem;
       background: transparent;
       border: 1px solid var(--accent-color);
+      border-radius: 4px; /* subtle rounded */
       color: var(--text-color);
       text-align: center;
       font-size: 1rem;
@@ -83,7 +84,7 @@
     }
 
     .result {
-      font-size: 2rem;
+      font-size: clamp(1.5rem, 4vw, 2.5rem);
       font-weight: bold;
       color: var(--accent-color);
       word-wrap: break-word;
