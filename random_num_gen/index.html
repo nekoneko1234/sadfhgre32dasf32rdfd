@@ -8,7 +8,7 @@
     :root {
       --bg-color: #1e1e1e;
       --text-color: #ffffff;
-      --accent-color: #ffffff; /* monotone white accent */
+      --accent-color: #ffffff;
     }
 
     body {
@@ -18,21 +18,19 @@
       color: var(--text-color);
       display: flex;
       justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      padding: 1rem;
+      padding: 2rem 1rem;
       box-sizing: border-box;
     }
 
     .container {
       width: 100%;
-      max-width: 600px;
+      max-width: 500px;
       text-align: center;
     }
 
     h1 {
       font-size: clamp(1.2rem, 2vw, 1.6rem);
-      margin-bottom: 2rem;
+      margin-bottom: 1.5rem;
       color: var(--accent-color);
       font-weight: 500;
     }
@@ -73,7 +71,7 @@
       justify-content: center;
       gap: 1rem;
       flex-wrap: wrap;
-      margin-bottom: 2rem;
+      margin-bottom: 1.5rem;
     }
 
     button {
