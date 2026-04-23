@@ -18,21 +18,21 @@
       color: var(--text-color);
       display: flex;
       justify-content: center;
-      align-items: flex-start; /* align from top so it won’t crop */
+      align-items: center;
       min-height: 100vh;
-      padding: 2rem 1rem;
+      padding: 1rem;
       box-sizing: border-box;
     }
 
     .container {
-      text-align: center;
       width: 100%;
-      max-width: 500px;
+      max-width: 600px;
+      text-align: center;
     }
 
     h1 {
       font-size: clamp(1.2rem, 2vw, 1.6rem);
-      margin-bottom: 1.5rem;
+      margin-bottom: 2rem;
       color: var(--accent-color);
       font-weight: 500;
     }
@@ -41,17 +41,28 @@
       display: flex;
       justify-content: center;
       gap: 1rem;
-      margin-bottom: 1.5rem;
       flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    label {
+      font-size: 0.9rem;
+      margin-bottom: 0.3rem;
+      color: var(--accent-color);
     }
 
     input {
-      flex: 1;
-      min-width: 80px;
+      width: 100px;
       padding: 0.5rem;
       background: transparent;
       border: 1px solid var(--accent-color);
-      border-radius: 4px; /* subtle rounded */
+      border-radius: 6px;
       color: var(--text-color);
       text-align: center;
       font-size: 1rem;
@@ -62,7 +73,7 @@
       justify-content: center;
       gap: 1rem;
       flex-wrap: wrap;
-      margin-bottom: 1.5rem;
+      margin-bottom: 2rem;
     }
 
     button {
@@ -70,7 +81,7 @@
       min-width: 120px;
       padding: 0.7rem;
       border: 1px solid var(--accent-color);
-      border-radius: 6px; /* slight rounded rectangle */
+      border-radius: 6px;
       background: transparent;
       color: var(--accent-color);
       font-size: 1rem;
@@ -84,7 +95,7 @@
     }
 
     .result {
-      font-size: clamp(1.5rem, 4vw, 2.5rem);
+      font-size: clamp(1.5rem, 5vw, 3rem);
       font-weight: bold;
       color: var(--accent-color);
       word-wrap: break-word;
@@ -95,8 +106,14 @@
   <div class="container">
     <h1>Random Number Generator</h1>
     <div class="inputs">
-      <input type="number" id="lower" placeholder="Min" value="1">
-      <input type="number" id="upper" placeholder="Max" value="100">
+      <div class="input-group">
+        <label for="lower">Min</label>
+        <input type="number" id="lower" value="1">
+      </div>
+      <div class="input-group">
+        <label for="upper">Max</label>
+        <input type="number" id="upper" value="100">
+      </div>
     </div>
     <div class="buttons">
       <button onclick="generate()">Generate</button>
