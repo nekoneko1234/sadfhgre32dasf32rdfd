@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notion RNG</title>
+    <style>
+        :root {
+            /* Adaptive Notion-like colors */
+            --bg-color: transparent;
+            --text-color: #ffffff;
+            --input-bg: #2f2f2f;
+            --input-border: #3f3f3f;
+            --accent-green: #457b3b;
+            --accent-green-hover: #528a47;
+            --gray-btn: #474c50;
+        }
+
+        /* Detect light mode if Notion is set to light */
+        @media (prefers-color-scheme: light) {
+            :root {
+                --text-color: #37352f;
+                --input-bg: #f4f4f4;
+                --input-border: #e9e9e9;
+                --gray-btn: #dfdfde;
+            }
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Apple Color Emoji, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            padding: 16px;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        label {
+            font-size: 14px;
+            font-weight: 500;
+            opacity: 0.8;
+        }
+
+        input {
+            width: 80px;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            color: var(--text-color);
+            padding: 4px 8px;
+            border-radius: 4px;
+            outline: none;
+            font-size: 14px;
+        }
+
+        .result-display {
+            font-size: 32px;
+            font-weight: 700;
+            text-align: center;
+            margin: 15px 0;
+            min-height: 40px;
+            color: var(--text-color);
+        }
+
+        .button-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        button {
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            transition: opacity 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .btn-generate {
+            background-color: var(--accent-green);
+            color: white;
+            flex-grow: 2;
+        }
+
+        .btn-generate:hover { background-color: var(--accent-green-hover); }
+
+        .btn-clear {
+            background-color: var(--gray-btn);
+            color: var(--text-color);
+            flex-grow: 1;
+        }
+
+        button:active { transform: scale(0.98); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="input-group">
+        <label>Lower Limit</label>
+        <input type="number" id="lower" value="1">
+    </div>
+    <div class="input-group">
+        <label>Upper Limit</label>
+        <input type="number" id="upper" value="100">
+    </div>
+
+    <div class="result-display" id="result">-</div>
+
+    <div class="button-row">
+        <button class="btn-generate" onclick="generate()">
+            Generate <span>▶</span>
+        </button>
+        <button class="btn-clear" onclick="clearResult()">Clear</button>
+    </div>
+</div>
+
+<script>
+    function generate() {
+        const min = Math.ceil(document.getElementById('lower').value);
+        const max = Math.floor(document.getElementById('upper').value);
+        
+        if (min >= max) {
+            document.getElementById('result').innerText = "Error";
+            return;
+        }
+
+        const randomNum = Math.floor(Math.random() * (max - min + 1)) + min;
+        document.getElementById('result').innerText = randomNum;
+    }
+
+    function clearResult() {
+        document.getElementById('result').innerText = "-";
+    }
+</script>
+
+</body>
+</html>
