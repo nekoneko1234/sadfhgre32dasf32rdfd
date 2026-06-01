@@ -101,4 +101,55 @@
         row.scrollIntoView({ behavior: 'smooth' });
 
         try {
-          const response = await fetch(API
+          const response = await fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ videoUrl: currentLink, lang: langSelect.value })
+          });
+
+          const data = await response.json();
+          const badgeStatus = row.querySelector('span:last-child');
+
+          if (data.error) {
+            badgeStatus.className = "text-red-400 font-bold shrink-0";
+            badgeStatus.innerText = "Gagal: " + data.error;
+          } else {
+            badgeStatus.className = "text-green-400 font-bold shrink-0";
+            badgeStatus.innerText = "Sukses!";
+
+            let finalText = data.text;
+            if (cleanTags) {
+              finalText = finalText.replace(/<[^>]*>/g, '');
+            }
+
+            zip.file(`${i + 1}-${data.title}.txt`, finalText);
+          }
+        } catch (err) {
+          const badgeStatus = row.querySelector('span:last-child');
+          badgeStatus.className = "text-red-500 font-bold shrink-0";
+          badgeStatus.innerText = "Error Network";
+        }
+      }
+
+      zip.generateAsync({ type: "blob" }).then(content => {
+        triggerFileDownload("batch_subtitles.zip", content);
+      });
+
+      submitBtn.disabled = false;
+      submitBtn.innerText = "Unduh Semua Subtitle (.zip)";
+    }
+
+    function triggerFileDownload(filename, content) {
+      const blob = new Blob([content], { type: "application/octet-stream" });
+      const temporaryAnchor = document.createElement('a');
+      temporaryAnchor.href = URL.createObjectURL(blob);
+      temporaryAnchor.download = filename;
+      temporaryAnchor.style.display = "none";
+      document.body.appendChild(temporaryAnchor);
+      temporaryAnchor.click();
+      document.body.removeChild(temporaryAnchor);
+      URL.revokeObjectURL(temporaryAnchor.href);
+    }
+  </script>
+</body>
+</html>
