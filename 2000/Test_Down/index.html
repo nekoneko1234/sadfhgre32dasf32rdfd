@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YT Mass CC Downloader - Smart URL Engine</title>
+    <title>YT Mass CC Downloader - DevTo ScannEngine</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
 <body class="bg-gray-900 text-gray-100 min-h-screen flex items-center justify-center p-4">
 
     <div class="w-full max-w-2xl bg-gray-800 rounded-xl shadow-2xl p-6 border border-gray-700">
         <h1 class="text-2xl font-bold text-center text-red-500 mb-2">🎬 YT Subtitle Downloader</h1>
-        <p class="text-sm text-gray-400 text-center mb-6">Fresh Start Engine — URL Extractor & iOS Protocol</p>
+        <p class="text-sm text-gray-400 text-center mb-6">Fresh Start Engine — HTML String Scann Protocol</p>
         
         <div class="space-y-4">
             <div>
@@ -36,7 +36,7 @@
     </div>
 
     <script>
-        // Mengunci trailing slash absolut demi mencegah preflight redirect loop penyebab eror 405
+        // URL dikunci menggunakan absolut trailing slash demi mencegah konversi otomatis POST ke GET oleh Cloudflare
         const WORKER_URL = "https://down-sub-fragile.negimanosensei.workers.dev/";
 
         async function startBatchDownload() {
@@ -47,25 +47,25 @@
 
             const rawLinks = textarea.value.split('\n').map(l => l.trim()).filter(l => l !== "");
             if (rawLinks.length === 0) {
-                alert("Silakan masukkan minimal satu link YouTube terlebih dahulu!");
+                alert("Silakan masukkan minimal satu tautan video YouTube terlebih dahulu!");
                 return;
             }
 
             btn.disabled = true;
             btn.innerText = "⏳ Sedang Memproses...";
             logBox.classList.remove("hidden");
-            logBox.innerHTML = "<div>[SISTEM] Memulai antrean unduhan massal...</div>";
+            logBox.innerHTML = "<div>[SISTEM] Memulai pemindaian string halaman secara massal...</div>";
 
             for (let i = 0; i < rawLinks.length; i++) {
                 const url = rawLinks[i];
                 const videoId = extractVideoId(url);
 
                 if (!videoId) {
-                    addLog(`[LEWAT] ${url} -> Gagal menerjemahkan URL menjadi ID Video`, "text-yellow-400");
+                    addLog(`[LEWAT] ${url} -> Format link tidak dikenali / Gagal ekstraksi ID`, "text-yellow-400");
                     continue;
                 }
 
-                addLog(`[PROSES] Menembak video ${i + 1}/${rawLinks.length} (ID: ${videoId})...`);
+                addLog(`[PROSES] Memindai video ${i + 1}/${rawLinks.length} (ID: ${videoId})...`);
 
                 try {
                     const response = await fetch(WORKER_URL, {
@@ -82,10 +82,10 @@
                     }
 
                     downloadBlob(data.text, `${data.title}.txt`);
-                    addLog(`[SUKSES] Berhasil mengunduh berkas teks untuk ID: ${videoId}`, "text-green-400");
+                    addLog(`[SUKSES] Berhasil mengekstrak naskah teks untuk ID: ${videoId}`, "text-green-400");
 
                 } catch (err) {
-                    addLog(`[ERROR NETWORK] Gagal terhubung ke Worker untuk ID: ${videoId}`, "text-red-500");
+                    addLog(`[ERROR NETWORK] Hubungan ke Worker terputus untuk ID: ${videoId}`, "text-red-500");
                 }
             }
 
@@ -94,7 +94,7 @@
             addLog("[SISTEM] Seluruh antrean selesai diproses.");
         }
 
-        // Fungsi cerdas penerjemah & pembersih URL YouTube di sisi frontend
+        // Fungsi filter penerjemah URL cerdas mendeteksi segala jenis format share link YouTube
         function extractVideoId(url) {
             const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|shorts\/)([^#\&\?]*).*/;
             const match = url.match(regExp);
