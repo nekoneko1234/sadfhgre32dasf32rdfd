@@ -3,132 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YT Batch CC Downloader - Fresh Engine</title>
+    <title>YT Batch Subtitle Downloader</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
 <body class="bg-gray-900 text-gray-100 min-h-screen flex items-center justify-center p-6">
     <div class="max-w-2xl w-full bg-gray-800 rounded-lg shadow-2xl p-8 border border-gray-700">
-        <h1 class="text-3xl font-bold mb-2 text-center text-red-500">YouTube CC Downloader v2</h1>
-        <p class="text-gray-400 text-sm text-center mb-6">Mengekstrak subtitle massal langsung via IP Client (Bypass Sandbox 404)</p>
+        <h1 class="text-3xl font-bold mb-2 text-center text-red-500">YouTube CC Downloader</h1>
+        <p class="text-gray-400 text-sm text-center mb-6">Download transkrip video massal langsung menjadi file .txt bersih</p>
         
         <div class="mb-4">
-            <label class="block text-sm font-medium mb-2">Input Link YouTube (Satu link per baris):</label>
+            <label class="block text-sm font-medium mb-2">Masukkan Tautan YouTube (Satu link per baris):</label>
             <textarea id="urlInput" rows="6" class="w-full bg-gray-900 border border-gray-600 rounded p-3 text-white focus:outline-none focus:border-red-500" placeholder="https://www.youtube.com/watch?v=76SxgXr79G0&#10;https://youtu.be/DWixMsS65gU"></textarea>
         </div>
 
         <div class="mb-6">
-            <label class="block text-sm font-medium mb-2">Kode Bahasa Target:</label>
+            <label class="block text-sm font-medium mb-2">Kode Bahasa Sasaran:</label>
             <input type="text" id="langInput" value="id" class="w-full bg-gray-900 border border-gray-600 rounded p-3 text-white focus:outline-none focus:border-red-500" placeholder="Contoh: id, en, ja">
         </div>
 
-        <button onclick="executeBatchDownload()" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded transition duration-200 shadow-md">
-            Mulai Download Massal (.txt)
+        <button onclick="startBatchProcessing()" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded transition duration-200 shadow-md">
+            Ekstrak Subtitle (.txt)
         </button>
 
         <div id="statusLog" class="mt-6 space-y-2 text-sm"></div>
     </div>
 
     <script>
-        // HARUS diakhiri dengan tanda garis miring "/" untuk mencegah 405 Redirect Loop
+        // CATATAN PENTING: Wajib mengunci alamat dengan tanda trailing slash "/" absolut di ujungnya
         const WORKER_URL = "https://down-sub-fragile.negimanosensei.workers.dev/"; 
 
-        function extractVideoId(url) {
-            const regExp = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|watch\?.*v=)|youtu\.be\/)([^"&?\/\s]{11})/;
-            const match = url.match(regExp);
-            return match ? match[1] : null;
-        }
-
-        async function executeBatchDownload() {
-            const rawInput = document.getElementById('urlInput').value;
-            const targetLang = document.getElementById('langInput').value.trim() || 'id';
+        async function startBatchProcessing() {
+            const urls = document.getElementById('urlInput').value.split('\n').map(u => u.trim()).filter(u => u);
+            const lang = document.getElementById('langInput').value.trim() || 'id';
             const logContainer = document.getElementById('statusLog');
-            
-            const urls = rawInput.split('\n').map(u => u.trim()).filter(u => u);
             logContainer.innerHTML = '';
 
             if (urls.length === 0) {
-                alert("Masukkan minimal satu link YouTube.");
+                alert("Harap masukkan minimal satu URL YouTube yang valid.");
                 return;
             }
 
             for (let i = 0; i < urls.length; i++) {
                 const url = urls[i];
-                const videoId = extractVideoId(url);
-                
                 const statusRow = document.createElement('div');
-                statusRow.className = "p-2 bg-gray-700 rounded flex justify-between items-center border-l-4 border-yellow-500";
-                statusRow.innerHTML = `<span>[${i+1}/${urls.length}] ID: ${videoId || 'Invalid'}</span><span class="text-yellow-400 animate-pulse font-mono">Menghubungkan Jalur...</span>`;
+                statusRow.className = "p-3 bg-gray-700 rounded flex justify-between items-center border-l-4 border-yellow-500";
+                statusRow.innerHTML = `<span>Memproses [${i+1}/${urls.length}]: ${url}</span><span class="text-yellow-400 animate-pulse font-mono">Fetching...</span>`;
                 logContainer.appendChild(statusRow);
 
-                if (!videoId) {
-                    statusRow.className = "p-2 bg-gray-700 rounded flex justify-between items-center border-l-4 border-red-500";
-                    statusRow.innerHTML = `<span>✕ Format salah: ${url}</span><span class="text-red-400 font-bold">Gagal</span>`;
-                    continue;
-                }
-
                 try {
-                    // Taktik Ekstensi Chrome: Fetch InnerTube Player API langsung memakai IP rumah user
-                    const playerUrl = "https://www.youtube.com/youtubei/v1/player?key=AIzaSyAO_2v9st9Y8_w79G0K9D3zK&prettyPrint=false";
-                    const ytResponse = await fetch(playerUrl, {
-                        method: 'POST',
-                        body: JSON.stringify({
-                            videoId: videoId,
-                            context: {
-                                client: {
-                                    clientName: "IOS_EMBEDDED",
-                                    clientVersion: "19.10.2",
-                                    hl: targetLang,
-                                    gl: "US"
-                                }
-                            }
-                        })
-                    });
-
-                    const playerData = await ytResponse.json();
-                    const captionTracks = playerData.captions?.playerCaptionsTracklistRenderer?.captionTracks;
-
-                    if (!captionTracks || captionTracks.length === 0) {
-                        throw new Error("Video tidak memiliki subtitle (CC aktif tidak ditemukan)");
-                    }
-
-                    // Cari track yang paling mendekati keinginan user
-                    let selectedTrack = captionTracks.find(t => t.languageCode === targetLang) || 
-                                        captionTracks.find(t => t.languageCode.startsWith(targetLang)) || 
-                                        captionTracks[0];
-
-                    let finalSubUrl = selectedTrack.baseUrl;
-                    if (selectedTrack.languageCode !== targetLang) {
-                        finalSubUrl += `&tlang=${targetLang}`;
-                    }
-
-                    // Kirim URL streaming subtitle final ke Cloudflare Worker untuk dibersihkan isinya via POST
-                    const workerResponse = await fetch(WORKER_URL, {
+                    const response = await fetch(WORKER_URL, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ subUrl: finalSubUrl })
+                        body: JSON.stringify({ videoUrl: url, lang: lang })
                     });
 
-                    const workerData = await workerResponse.json();
+                    const data = await response.json();
 
-                    if (!workerResponse.ok || workerData.error) {
-                        throw new Error(workerData.error || `Server Error ${workerResponse.status}`);
+                    if (!response.ok || data.error) {
+                        throw new Error(data.error || `HTTP Error ${response.status}`);
                     }
 
-                    // Eksekusi trigger penyimpanan file .txt otomatis di komputer/HP
-                    const blob = new Blob([workerData.text], { type: 'text/plain;charset=utf-8' });
-                    const dlLink = document.createElement('a');
-                    dlLink.href = URL.createObjectURL(blob);
-                    dlLink.download = `youtube-${videoId}-${targetLang}.txt`;
-                    document.body.appendChild(dlLink);
-                    dlLink.click();
-                    document.body.removeChild(dlLink);
+                    // Trigger unduhan dokumen teks langsung ke perangkat lokal user
+                    const blob = new Blob([data.text], { type: 'text/plain;charset=utf-8' });
+                    const downloadLink = document.createElement('a');
+                    downloadLink.href = URL.createObjectURL(blob);
+                    downloadLink.download = `${data.title}-${lang}.txt`;
+                    document.body.appendChild(downloadLink);
+                    downloadLink.click();
+                    document.body.removeChild(downloadLink);
 
-                    statusRow.className = "p-2 bg-gray-700 rounded flex justify-between items-center border-l-4 border-green-500";
-                    statusRow.innerHTML = `<span>✓ Berhasil: ${url}</span><span class="text-green-400 font-bold">Downloaded</span>`;
-
+                    statusRow.className = "p-3 bg-gray-700 rounded flex justify-between items-center border-l-4 border-green-500";
+                    statusRow.innerHTML = `<span>✓ Selesai: ${url}</span><span class="text-green-400 font-bold">Downloaded</span>`;
                 } catch (err) {
-                    statusRow.className = "p-2 bg-gray-700 rounded flex justify-between items-center border-l-4 border-red-500";
-                    statusRow.innerHTML = `<span>✕ ID: ${videoId} -> ${err.message}</span><span class="text-red-400 font-bold">Gagal</span>`;
+                    statusRow.className = "p-3 bg-gray-700 rounded flex justify-between items-center border-l-4 border-red-500";
+                    statusRow.innerHTML = `<span>✕ Gagal: ${url}</span><span class="text-red-400 font-bold">${err.message}</span>`;
                 }
             }
         }
