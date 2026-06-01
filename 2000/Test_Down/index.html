@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YT Mass CC Downloader - TVHTML5 Shield</title>
+    <title>YT Mass CC Downloader - Invidious Shield</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
 <body class="bg-gray-900 text-gray-100 min-h-screen flex items-center justify-center p-4">
 
     <div class="w-full max-w-2xl bg-gray-800 rounded-xl shadow-2xl p-6 border border-gray-700">
         <h1 class="text-2xl font-bold text-center text-red-500 mb-2">🎬 YT Subtitle Downloader</h1>
-        <p class="text-sm text-gray-400 text-center mb-6">Fresh Engine — TV Bypass Protocol</p>
+        <p class="text-sm text-gray-400 text-center mb-6">Fresh Engine — Cluster API Bypass Protocol</p>
         
         <div class="space-y-4">
             <div>
@@ -36,7 +36,6 @@
     </div>
 
     <script>
-        // Mempertahankan trailing slash absolut demi mencegah preflight redirect loop penyebab 405
         const WORKER_URL = "https://down-sub-fragile.negimanosensei.workers.dev/";
 
         async function startBatchDownload() {
@@ -54,7 +53,7 @@
             btn.disabled = true;
             btn.innerText = "⏳ Sedang Memproses...";
             logBox.classList.remove("hidden");
-            logBox.innerHTML = "<div>[SISTEM] Memulai antrean unduhan massal via TVHTML5 Engine...</div>";
+            logBox.innerHTML = "<div>[SISTEM] Memulai antrean unduhan massal via Cluster Proxy...</div>";
 
             for (let i = 0; i < links.length; i++) {
                 const url = links[i];
