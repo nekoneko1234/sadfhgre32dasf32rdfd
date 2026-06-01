@@ -4,38 +4,46 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YT Batch CC Downloader</title>
-    <script src="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.js"></script>
+    <!-- Tailwind CSS yang sudah diperbaiki memakai tag LINK (bukan SCRIPT) -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
 <body class="bg-gray-900 text-gray-100 min-h-screen flex flex-col items-center justify-center p-6">
     <div class="max-w-2xl w-full bg-gray-800 p-8 rounded-lg shadow-xl border border-gray-700">
         <h1 class="text-3xl font-bold mb-2 text-center text-red-500">YT Batch CC Downloader</h1>
         <p class="text-gray-400 text-sm mb-6 text-center">Download subtitle YouTube (.txt) secara massal sekaligus.</p>
         
-        <label class="block text-sm font-medium text-gray-300 mb-1">Masukkan Link YouTube (Satu link per baris):</label>
-        <textarea id="linksInput" rows="6" class="w-full p-4 bg-gray-700 rounded border border-gray-600 focus:outline-none focus:border-red-500 mb-4 font-mono text-sm" placeholder="https://www.youtube.com/watch?v=xxxxxx&#10;https://youtu.be/yyyyyy"></textarea>
+        <!-- Input Link Batch -->
+        <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-300 mb-2">Masukkan Link YouTube (Satu link per baris):</label>
+            <textarea id="linksInput" rows="6" class="w-full p-4 bg-gray-700 rounded border border-gray-600 focus:outline-none focus:border-red-500 font-mono text-sm" placeholder="https://www.youtube.com/watch?v=xxxxxx&#10;https://youtu.be/yyyyyy"></textarea>
+        </div>
         
-        <label class="block text-sm font-medium text-gray-300 mb-1">Pilih Bahasa Subtitle (Prioritas):</label>
-        <select id="langInput" class="w-full p-3 bg-gray-700 rounded border border-gray-600 focus:outline-none focus:border-red-500 mb-6 text-gray-100">
-            <option value="id">Indonesia (id)</option>
-            <option value="en">Inggris (en)</option>
-            <option value="ja">Jepang (ja)</option>
-            <option value="ko">Korea (ko)</option>
-            <option value="zh">Mandarin (zh)</option>
-        </select>
+        <!-- Pilihan Bahasa -->
+        <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-300 mb-2">Pilih Bahasa Subtitle (Prioritas):</label>
+            <select id="langInput" class="w-full p-3 bg-gray-700 rounded border border-gray-600 focus:outline-none focus:border-red-500 text-gray-100">
+                <option value="id">Indonesia (id)</option>
+                <option value="en">Inggris (en)</option>
+                <option value="ja">Jepang (ja)</option>
+                <option value="ko">Korea (ko)</option>
+                <option value="zh">Mandarin (zh)</option>
+            </select>
+        </div>
 
-        <button onclick="processBatch()" id="btnSubmit" class="w-full bg-red-600 hover:bg-red-700 font-bold py-3 px-4 rounded transition duration-200">
+        <button onclick="processBatch()" id="btnSubmit" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded transition duration-200">
             Download Semua (.txt)
         </button>
 
+        <!-- Tempat Log Progress -->
         <div id="statusLog" class="mt-6 space-y-2 max-h-60 overflow-y-auto hidden">
             <h3 class="font-semibold text-gray-300 border-b border-gray-700 pb-1">Progress Batch:</h3>
-            <div id="logContainer" class="space-y-1 mt-2"></div>
+            <div id="logContainer" class="space-y-2 mt-2"></div>
         </div>
     </div>
 
     <script>
-        // ⚠️ GANTI INI dengan URL Cloudflare Worker lo setelah dideploy!
-        const WORKER_URL = "https://down-sub-fragile.negimanosensei.workers.dev/";
+        // ⚠️ Menggunakan URL Cloudflare Worker milik lo yang sudah live
+        const WORKER_URL = "https://down-sub-fragile.negimanosensei.workers.dev";
 
         async function processBatch() {
             const textarea = document.getElementById('linksInput');
@@ -55,8 +63,8 @@
             for(let i=0; i < links.length; i++) {
                 const link = links[i];
                 const itemLog = document.createElement('div');
-                itemLog.className = "text-sm p-2 bg-gray-700 rounded flex justify-between items-center";
-                itemLog.innerHTML = `<span>${link.substring(0, 45)}...</span> <span class="text-yellow-400 font-medium animate-pulse">Memproses...</span>`;
+                itemLog.className = "text-sm p-3 bg-gray-700 rounded flex justify-between items-center border border-gray-600";
+                itemLog.innerHTML = `<span class="truncate max-w-xs md:max-w-md">${link}</span> <span class="text-yellow-400 font-medium animate-pulse shrink-0 ml-2">Memproses...</span>`;
                 logContainer.appendChild(itemLog);
 
                 try {
@@ -68,17 +76,17 @@
                     const data = await res.json();
 
                     if(data.error) {
-                        itemLog.querySelector('span:last-child').className = "text-red-400 font-medium";
+                        itemLog.querySelector('span:last-child').className = "text-red-400 font-medium shrink-0 ml-2";
                         itemLog.querySelector('span:last-child').innerText = "Gagal: " + data.error;
                     } else {
-                        itemLog.querySelector('span:last-child').className = "text-green-400 font-medium";
+                        itemLog.querySelector('span:last-child').className = "text-green-400 font-medium shrink-0 ml-2";
                         itemLog.querySelector('span:last-child').innerText = "Sukses!";
                         
                         // Eksekusi download file TXT langsung ke device user
                         downloadTxt(data.title + `-${lang}.txt`, data.text);
                     }
                 } catch(e) {
-                    itemLog.querySelector('span:last-child').className = "text-red-400 font-medium";
+                    itemLog.querySelector('span:last-child').className = "text-red-400 font-medium shrink-0 ml-2";
                     itemLog.querySelector('span:last-child').innerText = "Error Koneksi";
                 }
             }
