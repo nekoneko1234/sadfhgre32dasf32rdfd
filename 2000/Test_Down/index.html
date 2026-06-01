@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YT Batch CC Downloader</title>
-    <!-- Tailwind CSS yang sudah diperbaiki memakai tag LINK (bukan SCRIPT) -->
+    <!-- Tailwind CSS Pake Link -->
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
 <body class="bg-gray-900 text-gray-100 min-h-screen flex flex-col items-center justify-center p-6">
@@ -42,7 +42,7 @@
     </div>
 
     <script>
-        // ⚠️ Menggunakan URL Cloudflare Worker milik lo yang sudah live
+        // ⚠️ PENTING: Ganti URL di bawah dengan alamat Cloudflare Worker Lo (yang ujungnya workers.dev)
         const WORKER_URL = "https://down-sub-fragile.negimanosensei.workers.dev";
 
         async function processBatch() {
@@ -83,7 +83,7 @@
                         itemLog.querySelector('span:last-child').innerText = "Sukses!";
                         
                         // Eksekusi download file TXT langsung ke device user
-                        downloadTxt(data.title + `-${lang}.txt`, data.text);
+                        downloadTxt(data.title + `.txt`, data.text);
                     }
                 } catch(e) {
                     itemLog.querySelector('span:last-child').className = "text-red-400 font-medium shrink-0 ml-2";
