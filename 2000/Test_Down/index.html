@@ -3,6 +3,130 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YT Mass CC Downloader - Cluster Proxy</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen flex items-center justify-center p-4">
+
+    <div class="w-full max-w-2xl bg-gray-800 rounded-xl shadow-2xl p-6 border border-gray-700">
+        <h1 class="text-2xl font-bold text-center text-red-500 mb-2">🎬 YT Subtitle Downloader</h1>
+        <p class="text-sm text-gray-400 text-center mb-6">Fresh Start Engine — Cluster Proxy API Protocol</p>
+        
+        <div class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-300 mb-1">Masukkan Link YouTube (Satu link per baris untuk Batch):</label>
+                <textarea id="videoLinks" rows="6" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:outline-none text-white placeholder-gray-500" placeholder="https://www.youtube.com/watch?v=76SxgXr79G0&#10;https://youtu.be/DWixMsS65gU"></textarea>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-300 mb-1">Pilih Bahasa Target Subtitle:</label>
+                <select id="langSelect" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:outline-none text-white">
+                    <option value="id">Bahasa Indonesia (id)</option>
+                    <option value="en">Inggris (en)</option>
+                </select>
+            </div>
+
+            <button id="downloadBtn" onclick="startBatchDownload()" class="w-full py-3 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-semibold rounded-lg transition duration-200 shadow-md">
+                🚀 Download Semua Teks (.txt)
+            </button>
+
+            <div id="logStatus" class="mt-4 p-3 bg-gray-900 rounded-lg text-xs font-mono text-gray-400 space-y-1 hidden max-h-40 overflow-y-auto">
+                </div>
+        </div>
+    </div>
+
+    <script>
+        // Trailing slash absolut di akhir URL wajib dipertahankan demi memotong 405 redirect loop
+        const WORKER_URL = "https://down-sub-fragile.negimanosensei.workers.dev/";
+
+        async function startBatchDownload() {
+            const textarea = document.getElementById("videoLinks");
+            const langSelect = document.getElementById("langSelect");
+            const btn = document.getElementById("downloadBtn");
+            const logBox = document.getElementById("logStatus");
+
+            const rawLinks = textarea.value.split('\n').map(l => l.trim()).filter(l => l !== "");
+            if (rawLinks.length === 0) {
+                alert("Silakan masukkan minimal satu link YouTube terlebih dahulu!");
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerText = "⏳ Sedang Memproses...";
+            logBox.classList.remove("hidden");
+            logBox.innerHTML = "<div>[SISTEM] Memulai antrean unduhan massal via Cluster Proxy...</div>";
+
+            for (let i = 0; i < rawLinks.length; i++) {
+                const url = rawLinks[i];
+                const videoId = extractVideoId(url);
+
+                if (!videoId) {
+                    addLog(`[LEWAT] ${url} -> Gagal translasi URL menjadi ID Video`, "text-yellow-400");
+                    continue;
+                }
+
+                addLog(`[PROSES] Menembak video ${i + 1}/${rawLinks.length} (ID: ${videoId})...`);
+
+                try {
+                    const response = await fetch(WORKER_URL, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ videoId: videoId, lang: langSelect.value })
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        addLog(`[GAGAL] ID: ${videoId} -> Error: ${data.error || 'Unknown'}`, "text-red-400");
+                        continue;
+                    }
+
+                    downloadBlob(data.text, `${data.title}.txt`);
+                    addLog(`[SUKSES] Berhasil mengunduh teks untuk ID: ${videoId}`, "text-green-400");
+
+                } catch (err) {
+                    addLog(`[ERROR NETWORK] Hubungan ke Worker terputus untuk ID: ${videoId}`, "text-red-500");
+                }
+            }
+
+            btn.disabled = false;
+            btn.innerText = "🚀 Download Semua Teks (.txt)";
+            addLog("[SISTEM] Seluruh antrean selesai diproses.");
+        }
+
+        function extractVideoId(url) {
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|shorts\/)([^#\&\?]*).*/;
+            const match = url.match(regExp);
+            return (match && match[2].length === 11) ? match[2] : null;
+        }
+
+        function addLog(text, className = "text-gray-400") {
+            const logBox = document.getElementById("logStatus");
+            const div = document.createElement("div");
+            div.className = className;
+            div.innerText = text;
+            logBox.appendChild(div);
+            logBox.scrollTop = logBox.scrollHeight;
+        }
+
+        function downloadBlob(text, filename) {
+            const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html><!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YT Mass CC Downloader - DevTo ScannEngine</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
