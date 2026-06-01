@@ -1,155 +1,165 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>YT Batch Subtitle Downloader</title>
-  <!-- Tailwind CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-  <style>
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: #1f2937; }
-    ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 3px; }
-  </style>
-  <!-- JSZip untuk batch zip -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YT Batch Subtitle Downloader</title>
+    <!-- Tailwind CSS untuk UI Premium dan Bersih -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        /* Custom scrollbar untuk log antrean */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #1f2937; }
+        ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 3px; }
+    </style>
 </head>
 <body class="bg-gray-900 text-gray-100 min-h-screen flex flex-col items-center justify-center p-4 antialiased">
 
-  <div class="max-w-3xl w-full bg-gray-800 p-8 rounded-2xl shadow-2xl border border-gray-700">
-    <div class="text-center mb-8">
-      <h1 class="text-4xl font-extrabold tracking-tight text-red-500 flex items-center justify-center gap-2">
-        <svg class="w-9 h-9" fill="currentColor" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
-        YT Batch CC Downloader
-      </h1>
-      <p class="text-gray-400 text-sm mt-2">Ekstrak subtitle massal langsung menjadi file teks (.txt) bersih tanpa ribet.</p>
-    </div>
-
-    <div class="space-y-5">
-      <div>
-        <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">Daftar Link YouTube (Satu Link Per Baris):</label>
-        <textarea id="linksInput" rows="6" 
-          class="w-full p-4 bg-gray-700 rounded-xl border border-gray-600 focus:outline-none focus:border-red-500 font-mono text-sm placeholder-gray-500 resize-none transition" 
-          placeholder="https://www.youtube.com/watch?v=76SxgXr79G0&#10;https://youtu.be/DWixMsS65gU"></textarea>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">Target Bahasa Utama:</label>
-          <select id="langInput" class="w-full p-3 bg-gray-700 rounded-xl border border-gray-600 focus:outline-none focus:border-red-500 text-gray-200 transition">
-            <option value="id">Indonesia (id)</option>
-            <option value="en">Inggris (en)</option>
-            <option value="ja">Jepang (ja)</option>
-            <option value="ko">Korea (ko)</option>
-            <option value="zh">Mandarin (zh)</option>
-          </select>
+    <div class="max-w-3xl w-full bg-gray-800 p-8 rounded-2xl shadow-2xl border border-gray-700">
+        <!-- Header Ala DownSub Minimalis -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-extrabold tracking-tight text-red-500 flex items-center justify-center gap-2">
+                <svg class="w-9 h-9" fill="currentColor" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+                YT Batch CC Downloader
+            </h1>
+            <p class="text-gray-400 text-sm mt-2">Ekstrak subtitle massal langsung menjadi file teks (.txt) bersih tanpa ribet.</p>
         </div>
-        <div class="flex flex-col justify-end pb-1">
-          <label class="inline-flex items-center cursor-pointer select-none bg-gray-700/50 p-3 rounded-xl border border-gray-600/50">
-            <input type="checkbox" id="cleanTagsToggle" checked class="rounded bg-gray-600 border-gray-500 text-red-600 focus:ring-0 w-4 h-4 mr-3">
-            <span class="text-xs font-medium text-gray-300">Bersihkan tag subtitle (&lt;b&gt;, &lt;i&gt;, &lt;font&gt;)</span>
-          </label>
+
+        <!-- Input Main Area -->
+        <div class="space-y-5">
+            <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">Daftar Link YouTube (Satu Link Per Baris):</label>
+                <textarea id="linksInput" rows="6" 
+                    class="w-full p-4 bg-gray-700 rounded-xl border border-gray-600 focus:outline-none focus:border-red-500 font-mono text-sm placeholder-gray-500 resize-none transition" 
+                    placeholder="https://www.youtube.com/watch?v=76SxgXr79G0&#10;https://youtu.be/DWixMsS65gU"></textarea>
+            </div>
+
+            <!-- Pengaturan & Opsi Bahasa -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">Target Bahasa Utama:</label>
+                    <select id="langInput" class="w-full p-3 bg-gray-700 rounded-xl border border-gray-600 focus:outline-none focus:border-red-500 text-gray-200 transition">
+                        <option value="id">Indonesia (id)</option>
+                        <option value="en">Inggris (en)</option>
+                        <option value="ja">Jepang (ja)</option>
+                        <option value="ko">Korea (ko)</option>
+                        <option value="zh">Mandarin (zh)</option>
+                    </select>
+                </div>
+                <div class="flex flex-col justify-end pb-1">
+                    <label class="inline-flex items-center cursor-pointer select-none bg-gray-700/50 p-3 rounded-xl border border-gray-600/50">
+                        <input type="checkbox" id="cleanTagsToggle" checked class="rounded bg-gray-600 border-gray-500 text-red-600 focus:ring-0 w-4 h-4 mr-3">
+                        <span class="text-xs font-medium text-gray-300">Bersihkan tag subtitle (&lt;b&gt;, &lt;i&gt;, &lt;font&gt;)</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Tombol Utama Pemroses -->
+            <button onclick="executeBatchProcessing()" id="submitBtn" 
+                class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-4 px-6 rounded-xl shadow-lg transform active:scale-[0.99] transition duration-150 flex items-center justify-center gap-2 text-lg">
+                Unduh Semua Subtitle (.txt)
+            </button>
         </div>
-      </div>
 
-      <button onclick="executeBatchProcessing()" id="submitBtn" 
-        class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-4 px-6 rounded-xl shadow-lg transform active:scale-[0.99] transition duration-150 flex items-center justify-center gap-2 text-lg">
-        Unduh Semua Subtitle (.zip)
-      </button>
+        <!-- Panel Progress Status (Hidden Default) -->
+        <div id="progressSection" class="mt-8 border-t border-gray-700 pt-6 hidden">
+            <div class="flex justify-between items-center mb-3">
+                <h3 class="text-sm font-bold uppercase tracking-wider text-gray-300">Log Aktivitas Download:</h3>
+                <span id="counterLabel" class="text-xs bg-gray-700 px-3 py-1 rounded-full font-mono text-gray-400">0/0</span>
+            </div>
+            <div id="logBox" class="space-y-2.5 max-h-64 overflow-y-auto pr-1"></div>
+        </div>
     </div>
 
-    <div id="progressSection" class="mt-8 border-t border-gray-700 pt-6 hidden">
-      <div class="flex justify-between items-center mb-3">
-        <h3 class="text-sm font-bold uppercase tracking-wider text-gray-300">Log Aktivitas Download:</h3>
-        <span id="counterLabel" class="text-xs bg-gray-700 px-3 py-1 rounded-full font-mono text-gray-400">0/0</span>
-      </div>
-      <div id="logBox" class="space-y-2.5 max-h-64 overflow-y-auto pr-1"></div>
-    </div>
-  </div>
+    <script>
+        // Endpoint Backend Worker Resmi (Trailing Slash Diisi)
+        const API_URL = "https://down-sub-fragile.negimanosensei.workers.dev/";
 
-  <script>
-    const API_URL = "https://down-sub-fragile.negimanosensei.workers.dev/";
+        async function executeBatchProcessing() {
+            const linksArea = document.getElementById('linksInput');
+            const langSelect = document.getElementById('langInput');
+            const cleanTags = document.getElementById('cleanTagsToggle').checked;
+            const submitBtn = document.getElementById('submitBtn');
+            const progressSection = document.getElementById('progressSection');
+            const logBox = document.getElementById('logBox');
+            const counterLabel = document.getElementById('counterLabel');
 
-    async function executeBatchProcessing() {
-      const linksArea = document.getElementById('linksInput');
-      const langSelect = document.getElementById('langInput');
-      const cleanTags = document.getElementById('cleanTagsToggle').checked;
-      const submitBtn = document.getElementById('submitBtn');
-      const progressSection = document.getElementById('progressSection');
-      const logBox = document.getElementById('logBox');
-      const counterLabel = document.getElementById('counterLabel');
+            // Parsing teks menjadi array link bersih
+            const rawLinks = linksArea.value.split('\n').map(l => l.trim()).filter(l => l !== "");
+            if (rawLinks.length === 0) return alert("Bro, isi dulu link video YouTube-nya!");
 
-      const rawLinks = linksArea.value.split('\n').map(l => l.trim()).filter(l => l !== "");
-      if (rawLinks.length === 0) return alert("Bro, isi dulu link video YouTube-nya!");
+            // Inisialisasi UI State
+            logBox.innerHTML = "";
+            progressSection.classList.remove('hidden');
+            submitBtn.disabled = true;
+            submitBtn.className = "w-full bg-gray-700 text-gray-500 font-bold py-4 px-6 rounded-xl cursor-not-allowed flex items-center justify-center gap-2 text-lg";
+            submitBtn.innerText = "Sedang Menarik Data...";
 
-      logBox.innerHTML = "";
-      progressSection.classList.remove('hidden');
-      submitBtn.disabled = true;
-      submitBtn.innerText = "Sedang Menarik Data...";
+            // Jalankan loop berurutan (Batching System)
+            for (let i = 0; i < rawLinks.length; i++) {
+                const currentLink = rawLinks[i];
+                counterLabel.innerText = `${i + 1}/${rawLinks.length}`;
 
-      const zip = new JSZip();
+                // Buat template row progress baru
+                const row = document.createElement('div');
+                row.className = "text-xs p-3.5 bg-gray-700/60 rounded-xl border border-gray-600/70 flex justify-between items-center gap-4 transition";
+                row.innerHTML = `<span class="truncate font-mono text-gray-300 flex-1">${currentLink}</span>
+                                 <span class="text-yellow-500 font-bold tracking-wide animate-pulse shrink-0">Processing...</span>`;
+                logBox.appendChild(row);
+                row.scrollIntoView({ behavior: 'smooth' });
 
-      for (let i = 0; i < rawLinks.length; i++) {
-        const currentLink = rawLinks[i];
-        counterLabel.innerText = `${i + 1}/${rawLinks.length}`;
+                try {
+                    // Tembak backend via POST dengan payload JSON murni
+                    const response = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ videoUrl: currentLink, lang: langSelect.value })
+                    });
 
-        const row = document.createElement('div');
-        row.className = "text-xs p-3.5 bg-gray-700/60 rounded-xl border border-gray-600/70 flex justify-between items-center gap-4 transition";
-        row.innerHTML = `<span class="truncate font-mono text-gray-300 flex-1">${currentLink}</span>
-                         <span class="text-yellow-500 font-bold tracking-wide animate-pulse shrink-0">Processing...</span>`;
-        logBox.appendChild(row);
-        row.scrollIntoView({ behavior: 'smooth' });
+                    const data = await response.json();
+                    const badgeStatus = row.querySelector('span:last-child');
 
-        try {
-          const response = await fetch(API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ videoUrl: currentLink, lang: langSelect.value })
-          });
+                    if (data.error) {
+                        badgeStatus.className = "text-red-400 font-bold shrink-0";
+                        badgeStatus.innerText = "Gagal: " + data.error;
+                    } else {
+                        badgeStatus.className = "text-green-400 font-bold shrink-0";
+                        badgeStatus.innerText = "Sukses!";
 
-          const data = await response.json();
-          const badgeStatus = row.querySelector('span:last-child');
+                        // Filter tag jika user menyalakan switch pembersih (Karakteristik DownSub)
+                        let finalText = data.text;
+                        if (cleanTags) {
+                            finalText = finalText.replace(/<[^>]*>/g, '');
+                        }
 
-          if (data.error) {
-            badgeStatus.className = "text-red-400 font-bold shrink-0";
-            badgeStatus.innerText = "Gagal: " + data.error;
-          } else {
-            badgeStatus.className = "text-green-400 font-bold shrink-0";
-            badgeStatus.innerText = "Sukses!";
-
-            let finalText = data.text;
-            if (cleanTags) {
-              finalText = finalText.replace(/<[^>]*>/g, '');
+                        // Kirim file ke file saver browser
+                        triggerFileDownload(data.title + ".txt", finalText);
+                    }
+                } catch (err) {
+                    const badgeStatus = row.querySelector('span:last-child');
+                    badgeStatus.className = "text-red-500 font-bold shrink-0";
+                    badgeStatus.innerText = "Error Network";
+                }
             }
 
-            zip.file(`${i + 1}-${data.title}.txt`, finalText);
-          }
-        } catch (err) {
-          const badgeStatus = row.querySelector('span:last-child');
-          badgeStatus.className = "text-red-500 font-bold shrink-0";
-          badgeStatus.innerText = "Error Network";
+            // Kembalikan Tombol ke State Aktif setelah semua proses antrean selesai
+            submitBtn.disabled = false;
+            submitBtn.className = "w-full bg-red-600 hover:bg-red-700 text-white font-bold py-4 px-6 rounded-xl shadow-lg transform active:scale-[0.99] transition duration-150 flex items-center justify-center gap-2 text-lg";
+            submitBtn.innerText = "Unduh Semua Subtitle (.txt)";
         }
-      }
 
-      zip.generateAsync({ type: "blob" }).then(content => {
-        triggerFileDownload("batch_subtitles.zip", content);
-      });
-
-      submitBtn.disabled = false;
-      submitBtn.innerText = "Unduh Semua Subtitle (.zip)";
-    }
-
-    function triggerFileDownload(filename, content) {
-      const blob = new Blob([content], { type: "application/octet-stream" });
-      const temporaryAnchor = document.createElement('a');
-      temporaryAnchor.href = URL.createObjectURL(blob);
-      temporaryAnchor.download = filename;
-      temporaryAnchor.style.display = "none";
-      document.body.appendChild(temporaryAnchor);
-      temporaryAnchor.click();
-      document.body.removeChild(temporaryAnchor);
-      URL.revokeObjectURL(temporaryAnchor.href);
-    }
-  </script>
+        // Fungsi Blob Downloader Independen
+        function triggerFileDownload(filename, content) {
+            const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+            const temporaryAnchor = document.createElement('a');
+            temporaryAnchor.href = URL.createObjectURL(blob);
+            temporaryAnchor.download = filename;
+            temporaryAnchor.style.display = "none";
+            document.body.appendChild(temporaryAnchor);
+            temporaryAnchor.click();
+            document.body.removeChild(temporaryAnchor);
+            URL.revokeObjectURL(temporaryAnchor.href);
+        }
+    </script>
 </body>
 </html>
